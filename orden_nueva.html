@@ -246,7 +246,7 @@
 </main>
 
 <div class="guardar" id="barra">
-  <button id="btn" disabled onclick="guardar()">Guardar la orden</button>
+  <button id="btn" disabled onclick="guardaOrden()">Guardar la orden</button>
 </div>
 
 <div id="listo">
@@ -351,7 +351,7 @@ async function leerOrdenes(){
   try{ return await leer(CLAVE); }
   catch(e){ return []; }
 }
-async function guardar(){
+async function guardaOrden(){
   const btn = document.getElementById("btn");
   btn.disabled = true; btn.textContent = "Guardando…";
   const c = cifras();
@@ -375,11 +375,7 @@ async function guardar(){
     const actuales = await leerOrdenes();
     actuales.unshift(orden);
     TODAS = actuales;
-    const r = await fetch(API + "/" + CLAVE, {
-      method:"PUT", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(actuales.slice(0,400))
-    });
-    if(!r.ok) throw new Error("HTTP " + r.status);
+    await guardar(CLAVE, actuales.slice(0,400));
     document.getElementById("formulario").style.display="none";
     document.getElementById("barra").style.display="none";
     document.getElementById("listo").style.display="block";
