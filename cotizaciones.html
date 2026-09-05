@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cotizaciones recibidas · Transportes Avendaño</title>
+<style>
+  :root{
+    --marca:#2D2E82; --marca-2:#35A8E0; --tinta:#16202B; --tinta-2:#33465C;
+    --papel:#fff; --fondo:#EEF1F4; --borde:#D3DAE1;
+    --senal:#F2B01E; --senal-osc:#B8830C; --ok:#2E7D5B; --alerta:#B33A2B; --wa:#25D366;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--fondo); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:15px; line-height:1.55}
+  header{background:var(--marca); color:#fff; padding:14px 22px; display:flex; align-items:center; gap:14px}
+  header .logo{width:46px; height:46px; border-radius:9px; flex:none}
+  header .volver{flex:none; width:38px; height:38px; border-radius:9px; background:rgba(255,255,255,.14);
+    color:#fff; text-decoration:none; font-size:26px; line-height:35px; text-align:center; font-weight:600}
+  header .volver:hover{background:rgba(255,255,255,.28)}
+  header .marca{font-size:13px; opacity:.72}
+  header h1{font-size:20px; margin:2px 0 0; font-weight:600}
+  .franja{height:5px; background:var(--marca-2)}
+  main{max-width:1060px; margin:0 auto; padding:22px 18px 60px}
+
+  .barra{display:flex; flex-wrap:wrap; gap:10px; align-items:center; background:var(--papel);
+    border:1px solid var(--borde); border-radius:12px; padding:14px 16px; margin-bottom:18px}
+  .crece{flex:1}
+  button, .btn{font:inherit; cursor:pointer; border-radius:9px; border:1px solid transparent; padding:10px 15px}
+  .neutro{background:#fff; border-color:var(--borde); color:var(--tinta)}
+  .neutro:hover{border-color:var(--marca)}
+  .filtro{background:#fff; border:1px solid var(--borde); color:var(--tinta-2); font-weight:600}
+  .filtro[aria-pressed=true]{background:var(--marca); border-color:var(--marca); color:#fff}
+  input[type=search]{font:inherit; padding:9px 12px; border:1px solid var(--borde); border-radius:8px; min-width:210px}
+
+  .resumen{display:flex; gap:26px; flex-wrap:wrap; background:var(--marca); color:#fff;
+    border-radius:12px; padding:16px 20px; margin-bottom:18px}
+  .resumen div span{display:block; font-size:13px; opacity:.75}
+  .resumen div b{font-size:23px; font-weight:600}
+
+  .cot{background:var(--papel); border:1px solid var(--borde); border-left:5px solid var(--senal);
+    border-radius:0 12px 12px 0; padding:16px 18px; margin-bottom:12px}
+  .cot.contactada{border-left-color:var(--marca-2)}
+  .cot.cerrada{border-left-color:var(--ok)}
+  .cot.perdida{border-left-color:var(--alerta); opacity:.72}
+  .cot .top{display:flex; align-items:flex-start; gap:14px; flex-wrap:wrap}
+  .cot .quien b{font-size:17px; display:block}
+  .cot .quien span{font-size:14px; color:var(--tinta-2)}
+  .cot .monto{margin-left:auto; text-align:right; white-space:nowrap}
+  .cot .monto b{font-size:20px; display:block}
+  .cot .monto span{font-size:12.5px; color:var(--tinta-2)}
+  .datos{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:10px; font-size:14px; color:var(--tinta-2)}
+  .datos b{color:var(--tinta); font-weight:600}
+  .etq{display:inline-block; font-size:12.5px; font-weight:600; padding:3px 10px; border-radius:20px; margin-top:10px}
+  .e-nueva{background:#FFF4D6; color:var(--senal-osc)}
+  .e-contactada{background:#E4F1FA; color:#1B6E9B}
+  .e-cerrada{background:#E3F1EA; color:var(--ok)}
+  .e-perdida{background:#FBE7E4; color:var(--alerta)}
+  .acciones{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  .mini{background:#fff; border:1px solid var(--borde); color:var(--tinta-2); font-size:12.5px;
+    padding:7px 11px; border-radius:7px; text-decoration:none; display:inline-block}
+  .mini:hover{border-color:var(--marca); color:var(--marca)}
+  .mini.wa{border-color:var(--wa); color:#128C4A}
+  .mini.wa:hover{background:var(--wa); color:#06331A}
+  .mini.ok{border-color:var(--ok); color:var(--ok)}
+  .mini.ok:hover{background:var(--ok); color:#fff}
+  .mini.no:hover{border-color:var(--alerta); color:var(--alerta)}
+
+  .vacio{background:var(--papel); border:1px dashed var(--borde); border-radius:12px;
+    padding:40px; text-align:center; color:var(--tinta-2)}
+  .pie{margin-top:26px; font-size:13px; color:var(--tinta-2)}
+</style>
+</head>
+<body>
+<header>
+  <a class="volver" href="index.html" aria-label="Volver al inicio">‹</a>
+  <img src="logo.png" alt="" class="logo">
+  <div>
+    <div class="marca">Superfrut Transportes · desde el sitio web</div>
+    <h1>Cotizaciones recibidas</h1>
+  </div>
+</header>
+<div class="franja"></div>
+
+<main>
+  <div class="resumen">
+    <div><span>Sin contactar</span><b id="r-nuevas">0</b></div>
+    <div><span>En conversación</span><b id="r-cont">0</b></div>
+    <div><span>Cerradas</span><b id="r-cerr">0</b></div>
+    <div><span>Valor cotizado sin contactar</span><b id="r-monto">$0</b></div>
+  </div>
+
+  <div class="barra">
+    <button class="filtro" id="f-pendientes" aria-pressed="true" onclick="setFiltro('pendientes')">Por atender</button>
+    <button class="filtro" id="f-todas" aria-pressed="false" onclick="setFiltro('todas')">Todas</button>
+    <input type="search" id="buscar" placeholder="Buscar por nombre, teléfono o carga" oninput="pintar()">
+    <div class="crece"></div>
+    <button class="neutro" onclick="cargar()">Actualizar</button>
+  </div>
+
+  <div id="lista"><div class="vacio">Cargando…</div></div>
+
+  <p class="pie">Las cotizaciones llegan del cotizador publicado en gruposuperfrut.cl.
+  El valor mostrado es el que vio el cliente en pantalla, con IVA incluido.</p>
+</main>
+
+<script src="ta-lib.js?v=1"></script>
+<script>
+const CLAVE = "ta_cotizaciones";
+let COT = [], filtro = "pendientes";
+
+const plata = n => n == null ? "—" : "$" + Math.round(n).toLocaleString("es-CL");
+const esc = t => (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const sinTilde = t => (t||"").toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+async function cargar(){
+  document.getElementById("lista").innerHTML = '<div class="vacio">Cargando…</div>';
+  try{
+    COT = await leer(CLAVE);
+  }catch(e){
+    document.getElementById("lista").innerHTML =
+      '<div class="vacio">No se pudieron cargar las cotizaciones.<br>' + e.message + '</div>';
+    return;
+  }
+  pintar();
+}
+
+function setFiltro(f){
+  filtro = f;
+  document.getElementById("f-pendientes").setAttribute("aria-pressed", f==="pendientes");
+  document.getElementById("f-todas").setAttribute("aria-pressed", f==="todas");
+  pintar();
+}
+
+function tramo(c){
+  return c.ruta === "vuelta" ? "Puerto Natales → Santiago"
+       : c.ruta === "ida"    ? "Santiago → Puerto Natales" : "—";
+}
+
+function waCliente(c){
+  const fono = (c.fono||"").replace(/[^0-9]/g,"");
+  if(!fono) return null;
+  const num = fono.length === 9 ? "56" + fono : fono.length === 8 ? "569" + fono : fono;
+  const saludo = "Hola " + (c.nombre||"") + ", le escribimos de Superfrut Transportes por la " +
+    "cotización que hizo en nuestro sitio web (" + tramo(c) +
+    (c.total ? ", valor referencial " + plata(c.total) + " con IVA" : "") + ").";
+  return "https://wa.me/" + num + "?text=" + encodeURIComponent(saludo);
+}
+
+async function marca(id, estado){
+  const c = COT.find(x => x.id === id);
+  if(!c) return;
+  c.estado = estado;
+  c.actualizada = new Date().toISOString();
+  try{
+    await guardar(CLAVE, COT);
+    pintar();
+  }catch(e){
+    alert("No se pudo guardar el cambio.\n\n(" + e.message + ")");
+    cargar();
+  }
+}
+
+function pintar(){
+  const q = sinTilde(document.getElementById("buscar").value);
+  const coincide = c => !q || sinTilde(
+    [c.nombre, c.fono, c.correo, c.que].filter(Boolean).join(" ")).includes(q);
+
+  const nuevas = COT.filter(c => c.estado === "nueva");
+  document.getElementById("r-nuevas").textContent = nuevas.length;
+  document.getElementById("r-cont").textContent = COT.filter(c => c.estado === "contactada").length;
+  document.getElementById("r-cerr").textContent = COT.filter(c => c.estado === "cerrada").length;
+  document.getElementById("r-monto").textContent =
+    plata(nuevas.reduce((s,c) => s + (c.total||0), 0));
+  document.getElementById("f-pendientes").textContent =
+    "Por atender (" + COT.filter(c => c.estado === "nueva" || c.estado === "contactada").length + ")";
+
+  let lista = COT.filter(coincide);
+  if(filtro === "pendientes") lista = lista.filter(c => c.estado === "nueva" || c.estado === "contactada");
+
+  const cont = document.getElementById("lista");
+  if(!lista.length){
+    cont.innerHTML = '<div class="vacio">' +
+      (q ? "No hay cotizaciones que coincidan con esa búsqueda."
+         : filtro === "pendientes" ? "No queda ninguna cotización por atender."
+         : "Todavía no llegan cotizaciones desde el sitio web.") + '</div>';
+    return;
+  }
+
+  cont.innerHTML = lista.map(c => {
+    const f = new Date(c.creada);
+    const cuando = f.toLocaleDateString("es-CL",{day:"2-digit",month:"short"}) + " " +
+                   f.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+    const dias = Math.floor((Date.now() - f.getTime()) / 86400000);
+    const est = c.estado || "nueva";
+    const wa = waCliente(c);
+    const rotulo = {nueva:"Sin contactar", contactada:"En conversación",
+                    cerrada:"Cerrada", perdida:"No prosperó"}[est] || est;
+
+    return '<div class="cot ' + est + '">' +
+      '<div class="top">' +
+        '<div class="quien"><b>' + esc(c.nombre || "Sin nombre") + '</b>' +
+          '<span>' + cuando + (dias > 0 ? " · hace " + dias + (dias === 1 ? " día" : " días") : "") + '</span></div>' +
+        '<div class="monto"><b>' + plata(c.total) + '</b>' +
+          '<span>' + (c.total ? "con IVA" : "a cotizar a medida") + '</span></div>' +
+      '</div>' +
+      '<div class="datos">' +
+        '<div><b>' + tramo(c) + '</b></div>' +
+        (c.modo ? '<div>' + (c.modo === "aereo" ? "Aérea" : "Terrestre") + '</div>' : '') +
+        (c.kg ? '<div>' + c.kg + ' kg</div>' : '') +
+        (c.m3 ? '<div>' + c.m3 + ' m³</div>' : '') +
+      '</div>' +
+      '<div class="datos">' +
+        (c.fono ? '<div>Teléfono: <b>' + esc(c.fono) + '</b></div>' : '') +
+        (c.correo ? '<div>Correo: <b>' + esc(c.correo) + '</b></div>' : '') +
+      '</div>' +
+      (c.que ? '<div class="datos"><div>Carga: ' + esc(c.que) + '</div></div>' : '') +
+      '<span class="etq e-' + est + '">' + rotulo + '</span>' +
+      '<div class="acciones">' +
+        (wa ? '<a class="mini wa" href="' + wa + '" target="_blank" rel="noopener" ' +
+              'onclick="marca(\'' + c.id + '\',\'contactada\')">Escribir por WhatsApp</a>' : '') +
+        (c.correo ? '<a class="mini" href="mailto:' + esc(c.correo) +
+              '?subject=' + encodeURIComponent("Su cotización · Superfrut Transportes") + '" ' +
+              'onclick="marca(\'' + c.id + '\',\'contactada\')">Responder por correo</a>' : '') +
+        (est !== "cerrada" ? '<button class="mini ok" onclick="marca(\'' + c.id + '\',\'cerrada\')">Se concretó</button>' : '') +
+        (est !== "perdida" ? '<button class="mini no" onclick="marca(\'' + c.id + '\',\'perdida\')">No prosperó</button>' : '') +
+        (est !== "nueva" ? '<button class="mini" onclick="marca(\'' + c.id + '\',\'nueva\')">Volver a pendiente</button>' : '') +
+      '</div>' +
+    '</div>';
+  }).join("");
+}
+
+cargar();
+</script>
+</body>
+</html>

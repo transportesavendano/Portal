@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transportes Avendaño · Portal v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --grafito:#17161A; --grafito2:#221F26; --grafito3:#2E2A33; --grafito4:#3B3642;
+  --papel:#EBE8DF; --papel2:#F5F3EC; --papel3:#DDD9CD;
+  --ambar:#E39A2C; --austral:#4E8C9B; --verde:#4A8055; --alerta:#C2452D;
+  --tinta:#1A1815; --tinta2:#5B564C; --gris:#8C8779; --r:3px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Public Sans',system-ui,sans-serif;background:var(--grafito);color:var(--papel);font-size:15px;line-height:1.5}
+.mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1220px;margin:0 auto;padding:0 20px}
+
+/* conmutador de portal */
+.switchbar{background:#0F0E11;border-bottom:1px solid var(--grafito3)}
+.switchbar .wrap{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:11px 20px}
+.seg{display:flex;border:1px solid var(--grafito4);border-radius:var(--r);overflow:hidden}
+.seg button{appearance:none;background:none;border:none;cursor:pointer;color:var(--gris);
+  font:600 10.5px/1 'Archivo';letter-spacing:.13em;text-transform:uppercase;padding:9px 15px}
+.seg button[aria-pressed=true]{background:var(--ambar);color:var(--grafito)}
+.seg button:focus-visible{outline:2px solid var(--austral);outline-offset:-2px}
+.switchbar .who{font:400 11px/1 'IBM Plex Mono';color:var(--gris)}
+.ir-ordenes{display:inline-block;text-decoration:none;border:1px solid var(--ambar);
+  color:var(--grafito);background:var(--ambar);border-radius:var(--r);
+  font:600 10.5px/1 'Archivo';letter-spacing:.13em;text-transform:uppercase;padding:9px 15px}
+.ir-ordenes:hover{filter:brightness(1.08)}
+.ir-ordenes.sec{background:none;color:var(--ambar)}
+.ir-ordenes.sec:hover{background:rgba(227,154,44,.12);filter:none}
+.ir-ordenes:focus-visible{outline:2px solid var(--austral);outline-offset:2px}
+@media(max-width:640px){.switchbar .who{display:none}}
+
+/* encabezado */
+.top{border-bottom:1px solid var(--grafito3)}
+.top-in{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;padding:24px 0 0}
+.co{font:800 25px/1 'Archivo';letter-spacing:-.03em;color:var(--papel2)}
+.co span{color:var(--ambar)}
+.sub{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gris);margin-top:6px}
+.badge{display:inline-block;margin-left:7px;padding:2px 7px;border:1px solid var(--ambar);color:var(--ambar);
+  font:600 9.5px/1.5 'IBM Plex Mono';letter-spacing:.1em;border-radius:var(--r);vertical-align:middle}
+.emb{display:flex;gap:0;margin-top:20px;flex-wrap:wrap}
+.embtab{appearance:none;background:none;cursor:pointer;border:1px solid var(--grafito3);border-bottom:none;
+  border-radius:var(--r) var(--r) 0 0;padding:11px 17px 10px;margin-right:5px;text-align:left;color:var(--gris)}
+.embtab:hover{border-color:var(--grafito4)}
+.embtab[aria-pressed=true]{background:var(--grafito2);border-color:var(--grafito3);color:var(--papel2)}
+.embtab .d{font:700 12.5px/1.2 'Archivo';letter-spacing:.02em}
+.embtab .m{font:400 10px/1.4 'IBM Plex Mono';margin-top:2px}
+.embtab[aria-pressed=true] .m{color:var(--ambar)}
+
+/* corredor */
+.corr{background:var(--grafito2);border-bottom:1px solid var(--grafito3);padding:28px 0 24px}
+.corr-hd{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.corr-hd h2{font:700 14px/1 'Archivo';letter-spacing:.13em;text-transform:uppercase;color:var(--papel2)}
+.corr-hd .nota{font-size:11px;color:var(--gris)}
+.railbox{overflow-x:auto;padding-bottom:6px}
+.rail{position:relative;height:196px;min-width:940px;margin:0 8px}
+.rail-line{position:absolute;left:0;right:0;top:96px;height:2px;background:var(--grafito3)}
+.rail-fill{position:absolute;left:0;top:96px;height:2px;background:var(--ambar);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.hito{position:absolute;top:0;transform:translateX(-50%);text-align:center;width:126px}
+.hito .dot{width:11px;height:11px;border-radius:50%;background:var(--grafito3);border:2px solid var(--grafito2);
+  margin:91px auto 0;position:relative;z-index:2;transition:background .4s}
+.hito.on .dot{background:var(--ambar)}
+.hito.frontera .dot{width:4px;height:26px;border-radius:0;margin-top:84px;background:var(--grafito3);border:none;
+  box-shadow:7px 0 0 var(--grafito2),11px 0 0 var(--grafito3)}
+.hito.frontera.on .dot{background:var(--austral);box-shadow:7px 0 0 var(--grafito2),11px 0 0 var(--austral)}
+.hito .nm{font:600 11.5px/1.35 'Archivo';letter-spacing:.03em;text-transform:uppercase;color:var(--gris);transition:color .4s}
+.hito.on .nm{color:var(--papel2)}
+.hito .km{font:400 10px/1 'IBM Plex Mono';color:var(--grafito4);margin-top:4px}
+.hito.on .km{color:var(--gris)}
+.hito .pais{font:500 9px/1 'IBM Plex Mono';letter-spacing:.12em;color:var(--austral);margin-top:5px}
+/* etiquetas alternadas arriba/abajo para que no se junten */
+.hito .lbl{position:absolute;left:50%;transform:translateX(-50%);width:126px}
+.hito.up .lbl{bottom:112px}
+.hito.dn .lbl{top:112px}
+.camion{position:absolute;top:52px;transform:translateX(-50%);transition:left .5s cubic-bezier(.4,0,.2,1);z-index:4}
+.camion .cab{background:var(--ambar);color:var(--grafito);font:700 10.5px/1 'IBM Plex Mono';letter-spacing:.06em;
+  padding:6px 10px;border-radius:var(--r);white-space:nowrap;box-shadow:0 3px 14px rgba(0,0,0,.55)}
+.camion .stem{width:2px;height:26px;background:var(--ambar);margin:0 auto}
+.ctrl{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:14px;padding-top:18px;border-top:1px solid var(--grafito3)}
+.ctrl label{font:500 10px/1 'IBM Plex Mono';letter-spacing:.12em;text-transform:uppercase;color:var(--gris)}
+.ctrl input[type=range]{flex:1 1 240px;accent-color:var(--ambar);height:4px;cursor:pointer}
+.ctrl .est{font:600 12px/1 'IBM Plex Mono';color:var(--ambar);min-width:200px}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--grafito3)}
+.kpi{background:var(--grafito);padding:17px 17px 15px}
+.kpi .k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.kpi .v{font:600 22px/1.15 'IBM Plex Mono';color:var(--papel2);margin-top:6px;letter-spacing:-.02em}
+.kpi .v.amb{color:var(--ambar)} .kpi .v.al{color:var(--alerta)} .kpi .v.vd{color:#6FB283}
+.kpi .n{font-size:10.5px;color:var(--gris);margin-top:3px}
+
+/* hoja */
+.hoja{background:var(--papel);color:var(--tinta);padding:0 0 44px}
+.tabs{display:flex;border-bottom:1px solid var(--papel3);flex-wrap:wrap}
+.tab{appearance:none;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;
+  font:600 11.5px/1 'Archivo';letter-spacing:.13em;text-transform:uppercase;color:var(--tinta2);padding:20px 22px}
+.tab:hover{color:var(--tinta)}
+.tab[aria-selected=true]{color:var(--tinta);border-bottom-color:var(--alerta)}
+.tab:focus-visible{outline:2px solid var(--austral);outline-offset:-4px}
+.pane{padding-top:24px} .pane[hidden]{display:none}
+.pane h3{font:700 13px/1 'Archivo';letter-spacing:.12em;text-transform:uppercase;margin-bottom:5px}
+.pane .lead{font-size:13px;color:var(--tinta2);margin-bottom:20px;max-width:76ch}
+
+/* acordeón cliente */
+.cli-card{border:1px solid var(--papel3);background:var(--papel2);margin-bottom:9px;border-radius:var(--r)}
+.cli-hd{display:flex;flex-wrap:wrap;gap:12px;align-items:center;width:100%;appearance:none;background:none;
+  border:none;cursor:pointer;padding:14px 16px;text-align:left;color:var(--tinta)}
+.cli-hd:hover{background:var(--papel)}
+.cli-hd:focus-visible{outline:2px solid var(--austral);outline-offset:-3px}
+.cli-hd .car{font:600 12px/1 'IBM Plex Mono';color:var(--tinta2);width:26px;flex:none}
+.cli-hd .nm{font:700 15px/1.2 'Archivo';letter-spacing:-.01em;flex:1 1 180px}
+.cli-hd .sm{font:400 11.5px/1.4 'IBM Plex Mono';color:var(--tinta2);margin-top:3px;font-weight:400}
+.cli-hd .tot{font:600 14px/1 'IBM Plex Mono';white-space:nowrap}
+.cli-hd .chev{font:400 13px/1 'IBM Plex Mono';color:var(--tinta2);width:14px;flex:none;transition:transform .2s}
+.cli-card.open .chev{transform:rotate(90deg)}
+.cli-body{display:none;border-top:1px solid var(--papel3);padding:4px 0 6px}
+.cli-card.open .cli-body{display:block}
+.bulto{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;padding:11px 16px 11px 42px;
+  border-bottom:1px solid rgba(0,0,0,.05)}
+.bulto:last-child{border-bottom:none}
+.bulto .ix{font:600 10.5px/1.6 'IBM Plex Mono';color:var(--papel2);background:var(--tinta2);
+  padding:0 6px;border-radius:9px;flex:none}
+.bulto .mid{flex:1 1 260px}
+.bulto .pv{font-weight:600;font-size:13px}
+.bulto .dt{font:400 11.5px/1.5 'IBM Plex Mono';color:var(--tinta2)}
+.bulto .rt{text-align:right;font-family:'IBM Plex Mono';font-size:12.5px;white-space:nowrap}
+.bulto .rt b{font-size:13.5px}
+.doc{display:inline-flex;align-items:center;gap:5px;font:500 11px/1 'IBM Plex Mono';color:var(--austral);
+  text-decoration:none;border:1px solid #B9CFD5;background:#E4EFF2;padding:4px 8px;border-radius:var(--r);margin-top:5px}
+.doc:hover{background:#D6E7EB}
+.warnr{font:500 11px/1.4 'IBM Plex Mono';color:var(--alerta);margin-top:4px}
+
+.pill{display:inline-block;font:500 9.5px/1.6 'IBM Plex Mono';letter-spacing:.07em;padding:1px 7px;border-radius:9px;border:1px solid;white-space:nowrap}
+.p-ruta{color:#8A5E10;border-color:#D7B173;background:#F6EBD4}
+.p-ok{color:#2F5C3D;border-color:#9CBFA6;background:#E2EEE5}
+.p-esp{color:#4A4A52;border-color:#BEBCB4;background:#E7E5DD}
+.p-al{color:#8C2E1C;border-color:#D79B8C;background:#F7E2DC}
+.p-fr{color:#2C5A66;border-color:#93B6BF;background:#E0EBEE}
+
+/* checklist */
+.chk-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.btn{appearance:none;cursor:pointer;border:1px solid var(--tinta);background:var(--tinta);color:var(--papel2);
+  font:600 11px/1 'Archivo';letter-spacing:.11em;text-transform:uppercase;padding:11px 15px;border-radius:var(--r)}
+.btn:hover{background:#000}
+.btn.sec{background:transparent;color:var(--tinta)}
+.btn.sec:hover{background:var(--papel2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible{outline:2px solid var(--austral);outline-offset:2px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{font:600 9.5px/1.3 'Archivo';letter-spacing:.13em;text-transform:uppercase;color:var(--tinta2);
+  text-align:left;padding:0 10px 9px;border-bottom:1px solid var(--papel3);white-space:nowrap}
+tbody td{padding:10px;border-bottom:1px solid rgba(0,0,0,.05);vertical-align:top}
+td.num{text-align:right;font-family:'IBM Plex Mono';font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr.done{background:#E9F0EA}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--verde);cursor:pointer}
+.exp{background:var(--grafito);color:var(--papel);padding:18px;border-radius:var(--r);margin-top:22px;display:none}
+.exp.on{display:block}
+.exp h4{font:700 10.5px/1 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--ambar);margin-bottom:11px}
+.exp pre{font:400 11px/1.7 'IBM Plex Mono';color:var(--papel2);overflow-x:auto;white-space:pre}
+.exp .nt{font-size:11.5px;color:var(--gris);margin-top:12px}
+
+.aging{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:1px;background:var(--papel3);
+  border:1px solid var(--papel3);margin-bottom:22px}
+.ag{background:var(--papel2);padding:14px 14px 12px}
+.ag .k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--tinta2)}
+.ag .v{font:600 18px/1.2 'IBM Plex Mono';margin-top:5px}
+.ag .n{font-size:10.5px;color:var(--tinta2);margin-top:2px}
+.ag.rojo .v{color:var(--alerta)} .ag.ambar .v{color:#9A6A12} .ag.verde .v{color:var(--verde)}
+
+/* tracking */
+.tk-grid{display:grid;grid-template-columns:minmax(280px,1fr) minmax(300px,380px);gap:26px;align-items:start}
+@media(max-width:860px){.tk-grid{grid-template-columns:1fr}}
+.form{background:var(--papel2);border:1px solid var(--papel3);padding:19px;border-radius:var(--r)}
+.form h4{font:700 10.5px/1 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--tinta2);margin-bottom:15px}
+.fld{margin-bottom:13px}
+.fld label{display:block;font:600 10px/1 'Archivo';letter-spacing:.11em;text-transform:uppercase;color:var(--tinta2);margin-bottom:5px}
+.fld input,.fld select{width:100%;font:400 14px/1 'IBM Plex Mono';padding:10px 11px;border:1px solid var(--papel3);
+  border-radius:var(--r);background:#fff;color:var(--tinta)}
+.fld input:focus,.fld select:focus{outline:2px solid var(--austral);outline-offset:-1px;border-color:var(--austral)}
+.fld .hint{font-size:10.5px;color:var(--tinta2);margin-top:4px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+/* etiqueta zebra */
+.lbl-wrap{position:sticky;top:14px}
+.lbl-hd{font:700 10.5px/1 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--tinta2);margin-bottom:11px}
+.zebra{background:#fff;border:1px solid var(--papel3);width:100%;aspect-ratio:10/15;padding:14px;
+  display:flex;flex-direction:column;color:#000;font-family:'IBM Plex Mono',monospace}
+.zebra .zh{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #000;padding-bottom:7px}
+.zebra .zco{font:800 14px/1 'Archivo';letter-spacing:-.02em}
+.zebra .zsub{font-size:7.5px;letter-spacing:.1em;margin-top:3px}
+.zebra .zn{font:800 26px/1 'Archivo';text-align:right}
+.zebra .zrow{display:flex;justify-content:space-between;font-size:9.5px;padding:6px 0;border-bottom:1px dotted #999}
+.zebra .zrow b{font-weight:600}
+.zebra .zcli{font:800 17px/1.1 'Archivo';margin:8px 0 2px;letter-spacing:-.01em}
+.zebra .zbar{margin-top:auto;padding-top:10px}
+.zebra .zbar svg{width:100%;height:56px;display:block}
+.zebra .ztk{text-align:center;font:600 12px/1 'IBM Plex Mono';letter-spacing:.14em;margin-top:5px}
+.zebra .zft{font-size:7.5px;text-align:center;margin-top:7px;color:#555}
+.tk-nota{font-size:11.5px;color:var(--tinta2);margin-top:12px;line-height:1.6}
+
+/* portal cliente */
+.cportal{background:var(--grafito2);min-height:62vh;padding:44px 0 60px}
+.cbox{max-width:470px;margin:0 auto;background:var(--grafito);border:1px solid var(--grafito3);
+  border-radius:var(--r);padding:30px}
+.cbox h2{font:700 17px/1.2 'Archivo';color:var(--papel2);letter-spacing:-.01em}
+.cbox p.l{font-size:13px;color:var(--gris);margin:8px 0 20px}
+.cbox .fld label{color:var(--gris)}
+.cbox .fld input{background:var(--grafito2);border-color:var(--grafito3);color:var(--papel2)}
+.cbox .btn{width:100%;background:var(--ambar);border-color:var(--ambar);color:var(--grafito)}
+.cbox .btn:hover{background:#F0A93C}
+.demo{margin-top:18px;padding-top:16px;border-top:1px solid var(--grafito3);font-size:11px;color:var(--gris);line-height:1.9}
+.demo b{color:var(--papel2);font-family:'IBM Plex Mono';font-weight:500}
+.demo button{appearance:none;background:none;border:none;color:var(--ambar);cursor:pointer;
+  font:500 11px/1 'IBM Plex Mono';text-decoration:underline;padding:0}
+.cres{max-width:640px;margin:0 auto}
+.cres .back{appearance:none;background:none;border:1px solid var(--grafito3);color:var(--gris);cursor:pointer;
+  font:500 10.5px/1 'IBM Plex Mono';padding:8px 12px;border-radius:var(--r);margin-bottom:18px}
+.cres .back:hover{border-color:var(--grafito4);color:var(--papel2)}
+.ccard{background:var(--grafito);border:1px solid var(--grafito3);border-radius:var(--r);padding:24px;margin-bottom:14px}
+.ccard .ctk{font:600 11px/1 'IBM Plex Mono';letter-spacing:.14em;color:var(--ambar)}
+.ccard .ccli{font:700 21px/1.2 'Archivo';color:var(--papel2);margin:8px 0 3px;letter-spacing:-.01em}
+.ccard .cmeta{font:400 12px/1.6 'IBM Plex Mono';color:var(--gris)}
+.cst{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--grafito3);font-size:13px}
+.cst .d{width:8px;height:8px;border-radius:50%;background:var(--grafito3);flex:none}
+.cst.done .d{background:var(--verde)} .cst.now .d{background:var(--ambar);box-shadow:0 0 0 3px rgba(227,154,44,.2)}
+.cst.pend{color:var(--gris)}
+.cst .tm{margin-left:auto;font:400 10.5px/1 'IBM Plex Mono';color:var(--gris)}
+.cbultos{margin-top:16px;padding-top:14px;border-top:1px solid var(--grafito3)}
+.cbultos .h{font:700 9.5px/1 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--gris);margin-bottom:9px}
+.cbultos .b{display:flex;justify-content:space-between;font:400 11.5px/1.9 'IBM Plex Mono';color:var(--papel)}
+.cbultos .b span:last-child{color:var(--gris)}
+.oculto{background:var(--grafito2);border-left:2px solid var(--austral);padding:11px 14px;margin-top:16px;
+  font-size:11.5px;color:var(--gris);line-height:1.6}
+
+/* pie */
+.pie{background:var(--grafito);padding:30px 0 40px;border-top:1px solid var(--grafito3)}
+.pie h4{font:700 10.5px/1 'Archivo';letter-spacing:.14em;text-transform:uppercase;color:var(--ambar);margin-bottom:11px}
+.pie ul{list-style:none;font-size:12.5px;color:var(--gris);line-height:1.85;max-width:78ch}
+.pie li:before{content:'—';color:var(--grafito3);margin-right:9px}
+.pie .fin{font-size:11px;color:var(--grafito3);margin-top:20px;font-family:'IBM Plex Mono'}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="switchbar">
+  <div class="wrap">
+    <div class="seg" role="group" aria-label="Seleccionar portal">
+      <button id="btnInterno" aria-pressed="true">Portal interno</button>
+      <button id="btnCliente" aria-pressed="false">Portal cliente</button>
+    </div>
+    <a class="ir-ordenes" href="orden_nueva.html?v=1">Dejar una orden de facturación</a>
+    <a class="ir-ordenes sec" href="ordenes.html?v=1">Órdenes por facturar</a>
+    <a class="ir-ordenes sec" href="cotizaciones.html?v=1">Cotizaciones web</a>
+    <div class="who" id="whoTxt">Sesión: operaciones · Santiago y Puerto Natales</div>
+  </div>
+</div>
+
+<!-- ============ PORTAL INTERNO ============ -->
+<div id="interno">
+<header class="top">
+  <div class="wrap">
+    <div class="top-in">
+      <div style="flex:1 1 260px">
+        <div class="co">TRANSPORTES AVENDAÑO<span>.</span></div>
+        <div class="sub">Portal interno <span class="badge">BETA v2</span></div>
+      </div>
+    </div>
+    <div class="emb" id="embTabs" role="group" aria-label="Seleccionar embarque"></div>
+  </div>
+</header>
+
+<section class="corr">
+  <div class="wrap">
+    <div class="corr-hd">
+      <h2>Santiago → Puerto Natales</h2>
+      <div class="nota">Rampla sellada por aduana en origen · kilometrajes referenciales</div>
+    </div>
+    <div class="railbox"><div class="rail" id="rail"></div></div>
+    <div class="ctrl">
+      <label for="prog">Avance del viaje</label>
+      <input type="range" id="prog" min="0" max="100" value="46" aria-describedby="estTxt">
+      <div class="est mono" id="estTxt"></div>
+    </div>
+  </div>
+</section>
+
+<section class="kpis" id="kpis"></section>
+
+<main class="hoja">
+  <div class="wrap">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="p-reg" id="t-reg">Registro de carga</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-fac" id="t-fac">Facturación y cobranza</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-tk" id="t-tk">Tracking</button>
+    </div>
+
+    <div class="pane" id="p-reg" role="tabpanel" aria-labelledby="t-reg">
+      <h3>Registro de carga</h3>
+      <p class="lead">Agrupado por cliente. Un mismo cliente puede traer bultos de varios proveedores en el mismo embarque: aquí quedan juntos. Toca un cliente para abrir sus bultos y sus documentos.</p>
+      <div id="regList"></div>
+    </div>
+
+    <div class="pane" id="p-fac" role="tabpanel" aria-labelledby="t-fac" hidden>
+      <h3>Facturación y cobranza</h3>
+      <p class="lead">Marca cada carga a medida que se recibe conforme en Puerto Natales. Lo marcado arma la planilla que se sube a Facto para facturación recurrente.</p>
+      <div class="chk-tools">
+        <button class="btn sec" id="chkAll">Marcar todo recibido</button>
+        <button class="btn sec" id="chkNone">Limpiar</button>
+        <button class="btn" id="btnExport" disabled>Generar planilla Facto</button>
+        <span class="mono" id="chkCount" style="font-size:12px;color:var(--tinta2)"></span>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:34px">✓</th><th>Cliente</th><th>Bultos</th>
+          <th style="text-align:right">Kg</th><th style="text-align:right">m³</th>
+          <th style="text-align:right">Neto</th><th style="text-align:right">IVA</th>
+          <th style="text-align:right">Total</th><th>Estado</th>
+        </tr></thead>
+        <tbody id="tbFac"></tbody>
+      </table>
+      <div class="exp" id="expBox">
+        <h4>Planilla lista para Facto</h4>
+        <pre id="expPre"></pre>
+        <div class="nt">Formato provisorio. Al recibir el modelo de facturación recurrente de Facto se ajustan las columnas para que calce sin edición manual.</div>
+      </div>
+      <div style="margin-top:30px">
+        <h3 style="margin-bottom:14px">Cartera</h3>
+        <div class="aging" id="aging"></div>
+      </div>
+    </div>
+
+    <div class="pane" id="p-tk" role="tabpanel" aria-labelledby="t-tk" hidden>
+      <h3>Tracking y etiquetado</h3>
+      <p class="lead">El operador de bodega en Santiago registra la carga y el sistema enumera los bultos, genera el número de seguimiento e imprime las etiquetas en la Zebra.</p>
+      <div class="tk-grid">
+        <div>
+          <div class="form">
+            <h4>Recepción en bodega Santiago</h4>
+            <div class="fld">
+              <label for="tkCli">Cliente</label>
+              <input list="cliList" id="tkCli" placeholder="Escribe o elige un cliente">
+              <datalist id="cliList"></datalist>
+            </div>
+            <div class="fld">
+              <label for="tkProv">Proveedor / remitente</label>
+              <input id="tkProv" placeholder="Quién entrega la carga">
+            </div>
+            <div class="f2">
+              <div class="fld">
+                <label for="tkBul">N° de bultos</label>
+                <input id="tkBul" type="number" min="1" value="1">
+              </div>
+              <div class="fld">
+                <label for="tkDoc">Documento</label>
+                <input id="tkDoc" placeholder="Guía o factura">
+              </div>
+            </div>
+            <div class="f2">
+              <div class="fld">
+                <label for="tkKg">Peso total (kg)</label>
+                <input id="tkKg" type="number" min="0" step="0.1" placeholder="0">
+              </div>
+              <div class="fld">
+                <label for="tkM3">Volumen total (m³)</label>
+                <input id="tkM3" type="number" min="0" step="0.001" placeholder="0,000">
+              </div>
+            </div>
+            <div class="fld" id="fleteBox" style="display:none">
+              <label>Flete calculado</label>
+              <div class="mono" id="fleteTxt" style="font-size:17px;font-weight:600"></div>
+              <div class="hint" id="fleteHint"></div>
+            </div>
+            <button class="btn" id="btnGen" style="width:100%">Generar tracking e imprimir etiquetas</button>
+          </div>
+          <table style="margin-top:24px">
+            <thead><tr><th>Tracking</th><th>Cliente</th><th>Bultos</th><th style="text-align:right">Kg</th><th style="text-align:right">Neto</th></tr></thead>
+            <tbody id="tbTk"><tr><td colspan="5" style="color:var(--tinta2);padding:20px 10px">Todavía no se ha registrado ninguna carga en esta sesión.</td></tr></tbody>
+          </table>
+        </div>
+        <div>
+          <div class="lbl-wrap">
+            <div class="lbl-hd">Etiqueta Zebra · 10 × 15 cm</div>
+            <div id="zebraBox"></div>
+            <div class="tk-nota" id="zebraNav"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="pie">
+  <div class="wrap">
+    <h4>Qué es real y qué falta</h4>
+    <ul>
+      <li>Los dos embarques, sus 61 registros de carga, pesos, volúmenes y fletes calculados son reales.</li>
+      <li>Los estados de avance, la cartera y los teléfonos de acceso del portal cliente están simulados.</li>
+      <li>Los documentos abren un enlace de ejemplo: falta conectar la carpeta real de Google Drive de Santiago.</li>
+      <li>Las etiquetas se ven en pantalla: falta generar el ZPL que entiende la Zebra.</li>
+      <li>Falta confirmar la capacidad de las dos ramplas chicas para que la ocupación sea correcta por embarque.</li>
+    </ul>
+    <div class="fin">Transportes Avendaño y Avendaño LTDA · Prototipo de demostración</div>
+  </div>
+</footer>
+</div>
+
+<!-- ============ PORTAL CLIENTE ============ -->
+<div id="cliente" hidden>
+  <header class="top">
+    <div class="wrap"><div class="top-in" style="padding-bottom:22px">
+      <div style="flex:1 1 260px">
+        <div class="co">TRANSPORTES AVENDAÑO<span>.</span></div>
+        <div class="sub">Seguimiento de carga</div>
+      </div>
+    </div></div>
+  </header>
+  <section class="cportal">
+    <div class="wrap">
+      <div id="cLogin">
+        <div class="cbox">
+          <h2>Consulta tu carga</h2>
+          <p class="l">Ingresa tu número de seguimiento o el teléfono que registraste con nosotros.</p>
+          <div class="fld">
+            <label for="cInp">Tracking o teléfono</label>
+            <input id="cInp" placeholder="TA-260731-014 o +569...">
+          </div>
+          <button class="btn" id="cBtn">Ver mi carga</button>
+          <div id="cErr" style="color:var(--alerta);font-size:12px;margin-top:11px" hidden></div>
+          <div class="demo" id="cDemo"></div>
+        </div>
+      </div>
+      <div id="cRes" hidden></div>
+    </div>
+  </section>
+</div>
+<script src="ta-lib.js?v=1"></script>
+<script>
+const VIAJES = [{"id": "2026-07-28", "fecha": "2026-07-28", "chofer": "RODRIGO", "etiqueta": "MARTES", "cargas": [{"n": 1, "cliente": "ALTERNATIVA", "proveedor": "COMERCIAL ENRIQUE HERRERA", "doc": "706940 - 706950", "cantidad": "5 BULTOS", "bultos": 5, "desc": "", "kg": 85.0, "m3": 0.78, "cobro": 101400, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 2, "cliente": "ANTONIO AVENDAÑO", "proveedor": "SAMSUNG", "doc": "720732", "cantidad": "1 BULTO", "bultos": 1, "desc": "PALET N°1", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 3, "cliente": "CANTILLANO REFFER", "proveedor": "SCHWADERER - FARADAY", "doc": "2480 - 32", "cantidad": "50 CAJAS", "bultos": 50, "desc": "VINOS", "kg": 482.0, "m3": 1.068, "cobro": 241000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-24"}, {"n": 4, "cliente": "CANTILLANO REFFER", "proveedor": "IIMAS", "doc": "366 - 362 - 361", "cantidad": "5 BULTOS", "bultos": 5, "desc": "PALET N°1", "kg": 35.0, "m3": 0.26, "cobro": 33800, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 5, "cliente": "CANTILLANO REFFER", "proveedor": "COMERCIAL LA FUENTE", "doc": "42", "cantidad": "3 CAJAS", "bultos": 3, "desc": "VINOS", "kg": 28.0, "m3": 0.046, "cobro": 25000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 6, "cliente": "CERRO GUIDO", "proveedor": "CHC", "doc": "965765", "cantidad": "1 BULTO", "bultos": 1, "desc": "DISPENSADOR DE TOALLA", "kg": 40.0, "m3": 0.212, "cobro": 27560, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 7, "cliente": "COFI TRAILER", "proveedor": "COFI TRAILER", "doc": "1211", "cantidad": "7 BULTOS", "bultos": 7, "desc": "PALET N°1", "kg": 85.0, "m3": 0.48, "cobro": 62400, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 8, "cliente": "CONSTRUCTORA DI VICENTE", "proveedor": "ANWO", "doc": "1719431 - 1719466 - 1799487 - 88", "cantidad": "3 PALET", "bultos": 3, "desc": "", "kg": 749.0, "m3": 4.412, "cobro": 573560, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 9, "cliente": "DESTILERIA PATAGONIA", "proveedor": "MALTEXCO", "doc": "89514", "cantidad": "1 PALET", "bultos": 1, "desc": "SACOS MALTA", "kg": 570.0, "m3": 1.32, "cobro": 285000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 10, "cliente": "EL PIBE NATALES", "proveedor": "ATACAMITA INVESTMENTS", "doc": "15273", "cantidad": "10 BULTO", "bultos": 10, "desc": "", "kg": 130.0, "m3": 1.36, "cobro": 176800, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 11, "cliente": "EL PIBE NATALES", "proveedor": "MEL ALIMENTOS SPA", "doc": "242190", "cantidad": "31 BULTOS", "bultos": 31, "desc": "", "kg": 161.0, "m3": 0.45, "cobro": 80500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 12, "cliente": "EMAR", "proveedor": "VOENS SPA", "doc": "4362", "cantidad": "1 SACO", "bultos": 1, "desc": "CRYSTOLIE", "kg": 30.0, "m3": 0.04, "cobro": 25000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 13, "cliente": "ENERGIA RENOVABLE", "proveedor": "CGC SPA", "doc": "290", "cantidad": "1 BULTO", "bultos": 1, "desc": "PALET N°1", "kg": 21.0, "m3": 0.18, "cobro": 25000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 14, "cliente": "ENERGIA RENOVABLE", "proveedor": "FELICITY SOLAR - TRANSFORMADORES MORA", "doc": "4197 - 27410", "cantidad": "4 BULTOS", "bultos": 4, "desc": "PALET N°1", "kg": 184.0, "m3": 0.39, "cobro": 92000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 15, "cliente": "ENERGIA RENOVABLE", "proveedor": "CGC SPA", "doc": "7005", "cantidad": "1 BULTO", "bultos": 1, "desc": "PALET N°1", "kg": 33.0, "m3": 0.1, "cobro": 25000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 16, "cliente": "ENERGIA RENOVABLE", "proveedor": "CGC SPA", "doc": "289", "cantidad": "3 BULTOS", "bultos": 3, "desc": "GENERADOR", "kg": 111.0, "m3": 0.657, "cobro": 85410, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 17, "cliente": "ENERGIA RENOVABLE", "proveedor": "NATURA ENERGY SPA", "doc": "11594 - 95 - 96", "cantidad": "3 PALET", "bultos": 3, "desc": "SE FUE 1 DE 3 PALET", "kg": 3642.0, "m3": 10.137, "cobro": 1821000, "base": "KG", "tar": 500, "estado": "PARCIAL", "fecha": "2026-07-28"}, {"n": 18, "cliente": "ENERGIA RENOVABLE", "proveedor": "NATURA ENERGY SPA", "doc": "11599", "cantidad": "6 BUTOS", "bultos": 1, "desc": "ESTRUCTURA COPLANAR", "kg": 86.0, "m3": 0.318, "cobro": 43000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 19, "cliente": "EXPLORA", "proveedor": "HC PRO CONSTRUCCION Y MONTAJES", "doc": "1748", "cantidad": "1 GALON", "bultos": 1, "desc": "PALET N°1", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-24"}, {"n": 20, "cliente": "EXPLORA", "proveedor": "EXPLORA", "doc": "10156 - 10155", "cantidad": "31 BULTOS", "bultos": 31, "desc": "", "kg": 531.0, "m3": 3.8, "cobro": 494000, "base": "M3", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 21, "cliente": "EXPLORA", "proveedor": "AUSIN HNOS", "doc": "4728987", "cantidad": "4 PALET", "bultos": 4, "desc": "3 PALET RESTANTES", "kg": 5345.0, "m3": 10.936, "cobro": 2512150, "base": "KG", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-22"}, {"n": 22, "cliente": "EXPLORA", "proveedor": "HC PRO CONSTRUCCION Y MONTAJES", "doc": "1754 - 49 - 52 - 53", "cantidad": "22 BULTOS", "bultos": 22, "desc": "", "kg": 270.0, "m3": 1.1, "cobro": 143000, "base": "M3", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 23, "cliente": "GREYFOX OUTDOOR", "proveedor": "GREYFOX OUTDOOR", "doc": "339", "cantidad": "5 BULTOS", "bultos": 5, "desc": "", "kg": 104.0, "m3": 1.9, "cobro": 247000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-24"}, {"n": 24, "cliente": "HOTEL CASA VERDE", "proveedor": "CLAUDIA KIM SUH", "doc": "25678", "cantidad": "13 BULTOS", "bultos": 13, "desc": "PALET N°1", "kg": 144.0, "m3": 0.6, "cobro": 78000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 25, "cliente": "HOTEL NOI PATAGONIA", "proveedor": "IMPPORTADORA POTENZA", "doc": "1359", "cantidad": "12 TABLONES + 3 CAJAS", "bultos": 3, "desc": "PALET N°1", "kg": 422.0, "m3": 1.941, "cobro": 252330, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 26, "cliente": "INMOBILIARIA HAR", "proveedor": "CHACON Y CIA", "doc": "5205", "cantidad": "12 BULTOS", "bultos": 12, "desc": "PIEDRA", "kg": 955.0, "m3": 1.12, "cobro": 477500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 27, "cliente": "PUERTO BORIES", "proveedor": "DIMERC", "doc": "12304013", "cantidad": "3 PALET", "bultos": 3, "desc": "SE FUE 2 DE 3 PALET", "kg": 947.0, "m3": 7.32, "cobro": 951600, "base": "M3", "tar": 500, "estado": "PARCIAL", "fecha": "2026-07-23"}, {"n": 28, "cliente": "REMOTA", "proveedor": "HOHOS", "doc": "59581", "cantidad": "20 BULTOS", "bultos": 20, "desc": "FUNDAS - TOALLA", "kg": 390.0, "m3": 2.621, "cobro": 340730, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-24"}, {"n": 29, "cliente": "SUPERFRUT", "proveedor": "PANIMIX", "doc": "50592", "cantidad": "31 BULTOS", "bultos": 31, "desc": "HARINA", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 30, "cliente": "SUPERFRUT", "proveedor": "LEEFOOD", "doc": "214849", "cantidad": "1 PALET", "bultos": 1, "desc": "ALIMENTOS", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 31, "cliente": "SUPERFRUT", "proveedor": "VIRUTEX ILKO", "doc": "1439026 - 7 - 8 - 9", "cantidad": "234 BULTOS", "bultos": 234, "desc": "PRUDUCTOS LIMPIEZA", "kg": 1876.0, "m3": null, "cobro": 938000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-27"}, {"n": 32, "cliente": "SUPERFRUT", "proveedor": "JOSE CELSI", "doc": "132826", "cantidad": "150 CAJAS", "bultos": 150, "desc": "HUEVOS", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 33, "cliente": "TRANSPORTE HEINZ KRAUSE", "proveedor": "COMERCIAL JNF", "doc": "177767", "cantidad": "1 BULTO", "bultos": 1, "desc": "PALET N°1", "kg": 18.0, "m3": 0.04, "cobro": 25000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 34, "cliente": "UBUNTU", "proveedor": "HUTCHINGS Y RICCI", "doc": "38439 - 38438", "cantidad": "11 BULTOS", "bultos": 11, "desc": "PALET N°1", "kg": 247.0, "m3": 0.57, "cobro": 123500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}], "kg": 17721.0, "m3": 54.16, "flete": 10306240, "sinDato": 5, "clientes": 20}, {"id": "2026-07-31", "fecha": "2026-07-31", "chofer": "SERGIO", "etiqueta": "VIERNES", "cargas": [{"n": 1, "cliente": "HOTEL BESTWESTER", "proveedor": "MARAGANO-MERCHANT", "doc": "2", "cantidad": "1 BULTO", "bultos": 1, "desc": "", "kg": 54.0, "m3": 0.55, "cobro": 71500, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 2, "cliente": "PUERTO BORIES", "proveedor": "DIMERC", "doc": "12304013", "cantidad": "3 PALET", "bultos": 3, "desc": "CONFORT - TOALLAS", "kg": 947.0, "m3": 7.32, "cobro": 951600, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-23"}, {"n": 3, "cliente": "EXPLORA", "proveedor": "DARTEL - BEKO SERRVICIOS INTEGRALES", "doc": "49 - 50 - 4603196 - 197 - 198 - 4603200", "cantidad": "1 PALET + 18 BULTOS", "bultos": 19, "desc": "PALET N°1", "kg": 916.0, "m3": 3.12, "cobro": 430520, "base": "KG", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-28"}, {"n": 4, "cliente": "EL PIBE NATALES", "proveedor": "DISTRIBUIDORA MANAR", "doc": "96609", "cantidad": "5 BULTOS", "bultos": 5, "desc": "PALET N°1", "kg": 112.0, "m3": 0.365, "cobro": 56000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 5, "cliente": "AGROV. LA PAMPA", "proveedor": "MARBENPETS", "doc": "155345 - 51", "cantidad": "1 PALET", "bultos": 1, "desc": "", "kg": 971.0, "m3": 2.0, "cobro": 485500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 6, "cliente": "ASADOR PATAGONICO - LUKCIS", "proveedor": "LANFRA", "doc": "16465 - 16464", "cantidad": "4 CAJAS", "bultos": 4, "desc": "PALET N°1", "kg": 57.0, "m3": 0.423, "cobro": 54990, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 7, "cliente": "JULIETA FERNANDEZ", "proveedor": "IMPRESOS LAHOSA", "doc": "224705", "cantidad": "13 BULTOS", "bultos": 13, "desc": "PALET N°1", "kg": 63.0, "m3": 0.274, "cobro": 35620, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 8, "cliente": "VERTICE", "proveedor": "OFKI SPA", "doc": "95", "cantidad": "2 BULTOS", "bultos": 2, "desc": "PALET N°1", "kg": 31.0, "m3": 0.286, "cobro": 37180, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 9, "cliente": "ESPACIO DAI", "proveedor": "AQUAMUNDO LIMITADA", "doc": "221419 - 422 - 446", "cantidad": "1 PALET", "bultos": 1, "desc": "", "kg": 381.0, "m3": 1.248, "cobro": 190500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 10, "cliente": "JORGE CANTILLANO", "proveedor": "ACETOGEN", "doc": "1049886", "cantidad": "1 CAJA", "bultos": 1, "desc": "PALET N°1", "kg": 5.0, "m3": 0.034, "cobro": 25000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-29"}, {"n": 11, "cliente": "JORGE CANTILLANO", "proveedor": "ESTAMPA", "doc": "4423 - 4424", "cantidad": "6 BULTOS", "bultos": 6, "desc": "", "kg": 57.0, "m3": 0.12, "cobro": 28500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-30"}, {"n": 12, "cliente": "PACHAMAMA PRINT", "proveedor": "PAPIRO", "doc": "194710", "cantidad": "8 BULTOS", "bultos": 8, "desc": "", "kg": 134.0, "m3": 0.5, "cobro": 67000, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-30"}, {"n": 13, "cliente": "SUPERFRUT", "proveedor": "QUILLAYES", "doc": "2898393 - 4- 5", "cantidad": "52 BULTOS", "bultos": 52, "desc": "", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-30"}, {"n": 14, "cliente": "SUPERFRUT", "proveedor": "FUTURE SPA", "doc": "145", "cantidad": "32 BULTOS", "bultos": 32, "desc": "AGUAS SABORIZADAS", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-30"}, {"n": 15, "cliente": "SUPERFRUT", "proveedor": "ALIMENTOS FRUNA", "doc": "12489381 - 382 - 383 - 386", "cantidad": "6 PALET", "bultos": 6, "desc": "SE FUERON 3 PALET", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "PARCIAL", "fecha": "2026-07-30"}, {"n": 16, "cliente": "TURISMO Y SERVICIOS C Y R", "proveedor": "HOHOS", "doc": "59659", "cantidad": "2 BULTOS", "bultos": 2, "desc": "PALET N°1", "kg": 19.0, "m3": 0.084, "cobro": 25000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-30"}, {"n": 17, "cliente": "SUPERFRUT", "proveedor": "EVERCRISP", "doc": "42646241 - 42 - 43", "cantidad": "203 CAJAS", "bultos": 203, "desc": "", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 18, "cliente": "SUPERFRUT", "proveedor": "LIBESA", "doc": "414294", "cantidad": "87 BULTOS", "bultos": 87, "desc": "", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 19, "cliente": "SUPERFRUT", "proveedor": "IDEAL", "doc": "55974882", "cantidad": "50 BULTOS", "bultos": 50, "desc": "PAN", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 20, "cliente": "SUPERFRUT", "proveedor": "TOP K9", "doc": "49133", "cantidad": "2 PALET", "bultos": 2, "desc": "ARENA GATO", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 21, "cliente": "SUPERFRUT", "proveedor": "LA OFERTA", "doc": "1887936 - 1887937", "cantidad": "15 PALET", "bultos": 15, "desc": "TOALLA - CONFORT", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "PARCIAL", "fecha": "2026-07-31"}, {"n": 22, "cliente": "SUPERFRUT", "proveedor": "AUTOMATIZACIONES MAVIMET", "doc": "9", "cantidad": "17 BULTOS", "bultos": 17, "desc": "", "kg": 715.0, "m3": 2.5, "cobro": 357500, "base": "KG", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 23, "cliente": "SUPERFRUT", "proveedor": "JUGOS RUSTICOS SPA", "doc": "98730", "cantidad": "52 BULTOS", "bultos": 52, "desc": "JUGOS", "kg": null, "m3": null, "cobro": null, "base": "—", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 24, "cliente": "EXPLORA", "proveedor": "CESAR JAVIER CASANOVA", "doc": "96", "cantidad": "9 BULTOS", "bultos": 9, "desc": "", "kg": 121.0, "m3": 0.3, "cobro": 56870, "base": "KG", "tar": 470, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 25, "cliente": "VERTICE", "proveedor": "OFKI SPA", "doc": "94", "cantidad": "4 BULTOS", "bultos": 4, "desc": "PARKAS MERUN", "kg": 64.0, "m3": 0.602, "cobro": 78260, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 26, "cliente": "JULIETA FERNANDEZ", "proveedor": "COMERCIAL GHV SPA", "doc": "8", "cantidad": "2 CAJAS", "bultos": 2, "desc": "", "kg": 22.0, "m3": 0.092, "cobro": 25000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}, {"n": 27, "cliente": "PATAGONIA CAMP", "proveedor": "IMAHE", "doc": "642315", "cantidad": "1 CAJA", "bultos": 1, "desc": "", "kg": 3.0, "m3": 0.025, "cobro": 25000, "base": "M3", "tar": 500, "estado": "DESPACHADO", "fecha": "2026-07-31"}], "kg": 4672.0, "m3": 19.84, "flete": 3001540, "sinDato": 9, "clientes": 14}];
+const CAP_KG = 23000, CAP_M3 = 90, TAR_M3 = 130000, MINIMO = 25000, CREDITO = 15;
+
+const HITOS = [
+  {nm:'Bodega Santiago',    km:0,    p:0,  up:true},
+  {nm:'Osorno',             km:915,  p:30, up:false},
+  {nm:'Paso Samoré',        km:1040, p:34, up:true,  frontera:true, pais:'CL → AR'},
+  {nm:'Bariloche',          km:1130, p:37, up:false},
+  {nm:'Comodoro Rivadavia', km:1980, p:65, up:true},
+  {nm:'Río Gallegos',       km:2700, p:89, up:false},
+  {nm:'Integración Austral',km:2770, p:92, up:true,  frontera:true, pais:'AR → CL'},
+  {nm:'Puerto Natales',     km:3020, p:100,up:false}
+];
+const FASES = [
+  {t:'Recibido en bodega Santiago', s:'Pesado, cubicado y etiquetado', p:0},
+  {t:'Cargado en rampla',           s:'Manifiesto emitido',            p:4},
+  {t:'Rampla sellada por aduana',   s:'Sello de tránsito internacional',p:8},
+  {t:'En ruta sur',                 s:'Corredor chileno',              p:12},
+  {t:'Frontera Paso Samoré',        s:'Tránsito CL → AR',              p:34},
+  {t:'Tránsito Argentina',          s:'Ruta 40 / Ruta 3',              p:40},
+  {t:'Frontera Integración Austral',s:'Tránsito AR → CL',              p:92},
+  {t:'Desconsolidado en Natales',   s:'Sello abierto, carga en bodega',p:97},
+  {t:'Entregado',                   s:'Recibido conforme',             p:100}
+];
+const clp = n => n == null ? '—' : '$' + Math.round(n).toLocaleString('es-CL');
+
+/* IVA de un grupo: se suma carga por carga, porque Facto valida el bruto de CADA
+   linea como ROUND(cantidad x valor unitario x 1,19). Calcularlo sobre el neto ya
+   agrupado descuadra cuando las cantidades traen decimales (los m3, sobre todo). */
+function ivaGrupo(g) {
+  if (g.items && g.items.length) {
+    return g.items.reduce((a, c) => {
+      if (c.cobro == null) return a;
+      const cant = c.base === 'M3' ? c.m3 : c.kg;
+      const unit = c.base === 'M3' ? TARIFAS.m3 : (c.tar || TARIFAS.kg);
+      return a + (cant ? ivaLinea(cant, unit) : ivaLinea(1, c.cobro));
+    }, 0);
+  }
+  return ivaLinea(g.cantidad || 1, g.unit || g.neto);
+}
+const rnd = (s, n) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 1000003; return h % n; };
+
+// ---------- tracking + teléfonos de demo ----------
+const yy = f => f.slice(2, 4) + f.slice(5, 7) + f.slice(8, 10);
+VIAJES.forEach(v => {
+  const porCli = {};
+  v.cargas.forEach(c => { (porCli[c.cliente] = porCli[c.cliente] || []).push(c); });
+  v.grupos = Object.entries(porCli).map(([cliente, items], i) => {
+    const tk = 'TA-' + yy(v.fecha) + '-' + String(i + 1).padStart(3, '0');
+    items.forEach((c, k) => { c.tk = tk; c.sub = k + 1; });
+    const kg = items.reduce((a, c) => a + (c.kg || 0), 0);
+    const m3 = items.reduce((a, c) => a + (c.m3 || 0), 0);
+    const neto = items.reduce((a, c) => a + (c.cobro || 0), 0);
+    return {
+      cliente, tk, items, kg, m3, neto,
+      bultos: items.reduce((a, c) => a + c.bultos, 0),
+      provs: new Set(items.map(c => c.proveedor)).size,
+      faltan: items.filter(c => c.cobro == null).length,
+      parcial: items.some(c => c.estado === 'PARCIAL'),
+      fono: '+569 ' + (4000 + rnd(cliente, 5000)) + ' ' + (1000 + rnd(cliente + 'x', 9000)),
+      folio: 10740 + rnd(cliente + v.fecha, 200),
+      diasEmit: rnd(cliente + 'd', 4)
+    };
+  }).sort((a, b) => b.neto - a.neto);
+});
+
+let vIx = 0, prog = 46, recibidos = new Set(), generados = [], zIx = 0;
+const V = () => VIAJES[vIx];
+
+// ---------- Code 39 ----------
+const C39 = {'0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw','5':'wnnwwnnnn',
+'6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn','A':'wnnnnwnnw','B':'nnwnnwnnw','C':'wnwnnwnnn',
+'D':'nnnnwwnnw','E':'wnnnwwnnn','F':'nnwnwwnnn','G':'nnnnnwwnw','H':'wnnnnwwnn','I':'nnwnnwwnn','J':'nnnnwwwnn',
+'K':'wnnnnnnww','L':'nnwnnnnww','M':'wnwnnnnwn','N':'nnnnwnnww','O':'wnnnwnnwn','P':'nnwnwnnwn','Q':'nnnnnnwww',
+'R':'wnnnnnwwn','S':'nnwnnnwwn','T':'nnnnwnwwn','U':'wwnnnnnnw','V':'nwwnnnnnw','W':'wwwnnnnnn','X':'nwnnwnnnw',
+'Y':'wwnnwnnnn','Z':'nwwnwnnnn','-':'nwnnnnwnw','.':'wwnnnnwnn',' ':'nwwnnnwnn','*':'nwnnwnwnn'};
+function barcode39(txt) {
+  const s = '*' + txt.toUpperCase().replace(/[^0-9A-Z\-. ]/g, '') + '*';
+  let x = 0, out = '';
+  for (const ch of s) {
+    const pat = C39[ch]; if (!pat) continue;
+    for (let i = 0; i < 9; i++) {
+      const w = pat[i] === 'w' ? 3 : 1;
+      if (i % 2 === 0) out += `<rect x="${x}" y="0" width="${w}" height="100" fill="#000"/>`;
+      x += w;
+    }
+    x += 1;
+  }
+  return `<svg viewBox="0 0 ${x} 100" preserveAspectRatio="none" role="img" aria-label="Código ${txt}">${out}</svg>`;
+}
+
+// ---------- pestañas de embarque ----------
+function pintaEmb() {
+  document.getElementById('embTabs').innerHTML = VIAJES.map((v, i) => {
+    const [a, m, dd] = v.fecha.split('-');
+    return `<button class="embtab" data-i="${i}" aria-pressed="${i === vIx}">
+      <div class="d">${dd}-${m}-${a} · ${v.etiqueta}</div>
+      <div class="m">${v.chofer} · ${v.cargas.length} cargas · ${clp(v.flete)}</div></button>`;
+  }).join('');
+  document.querySelectorAll('.embtab').forEach(b =>
+    b.onclick = () => { vIx = +b.dataset.i; recibidos = new Set(); render(); });
+}
+
+// ---------- corredor ----------
+function pintaRail() {
+  const rail = document.getElementById('rail');
+  if (!rail.dataset.ok) {
+    rail.innerHTML = '<div class="rail-line"></div><div class="rail-fill" id="fill"></div>' +
+      HITOS.map(h => `<div class="hito ${h.up ? 'up' : 'dn'}${h.frontera ? ' frontera' : ''}" data-p="${h.p}" style="left:${h.p}%">
+          <div class="dot"></div>
+          <div class="lbl"><div class="nm">${h.nm}</div><div class="km mono">km ${h.km.toLocaleString('es-CL')}</div>
+          ${h.pais ? `<div class="pais">${h.pais}</div>` : ''}</div>
+        </div>`).join('') +
+      '<div class="camion" id="cam"><div class="cab" id="camTxt"></div><div class="stem"></div></div>';
+    rail.dataset.ok = '1';
+  }
+  document.getElementById('fill').style.width = prog + '%';
+  document.getElementById('cam').style.left = prog + '%';
+  document.getElementById('camTxt').textContent = 'km ' + Math.round(prog / 100 * 3020).toLocaleString('es-CL');
+  rail.querySelectorAll('.hito').forEach(h => h.classList.toggle('on', prog >= +h.dataset.p));
+  const sig = HITOS.find(h => h.p > prog);
+  document.getElementById('estTxt').textContent = prog >= 100 ? 'Desconsolidando en Puerto Natales'
+    : (prog >= 92 || (prog >= 34 && prog <= 37)) ? 'En trámite fronterizo'
+    : sig ? 'Próximo hito · ' + sig.nm : '';
+}
+
+const fase = () => { let i = -1; FASES.forEach((f, k) => { if (prog >= f.p) i = k; }); return i; };
+const entregado = () => prog >= 100;
+
+// ---------- KPI ----------
+function pintaKpis() {
+  const v = V();
+  const k = [
+    ['Flete del embarque', clp(v.flete), v.cargas.length + ' cargas · ' + v.clientes + ' clientes', ''],
+    ['Ocupación peso', (v.kg / CAP_KG * 100).toFixed(0) + '%', v.kg.toLocaleString('es-CL') + ' de ' + CAP_KG.toLocaleString('es-CL') + ' kg', 'amb'],
+    ['Ocupación volumen', (v.m3 / CAP_M3 * 100).toFixed(0) + '%', v.m3.toLocaleString('es-CL') + ' de ' + CAP_M3 + ' m³', ''],
+    ['Sin cubicar', v.sinDato + ' cargas', 'no facturables hoy', v.sinDato ? 'al' : ''],
+    ['Recibido conforme', recibidos.size + '/' + v.grupos.length, 'clientes marcados', recibidos.size ? 'vd' : '']
+  ];
+  document.getElementById('kpis').innerHTML = k.map(([a, b, c, cl]) =>
+    `<div class="kpi"><div class="k">${a}</div><div class="v ${cl}">${b}</div><div class="n">${c}</div></div>`).join('');
+}
+
+// ---------- registro de carga ----------
+function pintaRegistro() {
+  document.getElementById('regList').innerHTML = V().grupos.map((g, i) => `
+    <div class="cli-card" data-g="${i}">
+      <button class="cli-hd" aria-expanded="false">
+        <span class="chev">›</span>
+        <span class="car mono">${String(i + 1).padStart(2, '0')}</span>
+        <span class="nm">${g.cliente}
+          <span class="sm">${g.tk} · ${g.bultos} bultos · ${g.provs} proveedor${g.provs === 1 ? '' : 'es'}</span></span>
+        ${g.faltan ? `<span class="pill p-al">${g.faltan} sin cubicar</span>` : ''}
+        ${g.parcial ? '<span class="pill p-ruta">Parcial</span>' : ''}
+        <span class="tot">${g.neto ? clp(g.neto) : '—'}</span>
+      </button>
+      <div class="cli-body">
+        ${g.items.map(c => `<div class="bulto">
+          <span class="ix">${g.tk}·${String(c.sub).padStart(2, '0')}</span>
+          <span class="mid">
+            <span class="pv">${c.proveedor}</span>
+            <span class="dt">${c.cantidad}${c.desc ? ' · ' + c.desc : ''} · recibido ${c.fecha.split('-').reverse().join('-')}</span>
+            ${c.cobro == null ? '<div class="warnr">Falta peso y volumen · no se puede valorizar ni facturar</div>' : ''}
+            <a class="doc" href="https://drive.google.com" target="_blank" rel="noopener">▤ Doc ${c.doc.length > 26 ? c.doc.slice(0, 26) + '…' : c.doc}</a>
+          </span>
+          <span class="rt">
+            ${c.kg == null ? '—' : c.kg.toLocaleString('es-CL') + ' kg'} · ${c.m3 == null ? '—' : c.m3 + ' m³'}<br>
+            <b>${clp(c.cobro)}</b> ${c.cobro != null ? `<span style="color:var(--tinta2)">${c.base}${c.tar === 470 ? ' · $470' : ''}</span>` : ''}
+          </span>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('.cli-card').forEach(card => {
+    const btn = card.querySelector('.cli-hd');
+    btn.onclick = () => {
+      const open = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    };
+  });
+}
+
+// ---------- facturación ----------
+function pintaFac() {
+  const gs = V().grupos;
+  document.getElementById('tbFac').innerHTML = gs.map((g, i) => {
+    const ok = recibidos.has(i), neto = g.neto, iva = ivaGrupo(g);
+    return `<tr class="${ok ? 'done' : ''}">
+      <td><input type="checkbox" data-i="${i}" ${ok ? 'checked' : ''} aria-label="Recibido ${g.cliente}"></td>
+      <td><b>${g.cliente}</b><div class="mono" style="font-size:11px;color:var(--tinta2)">${g.tk}</div></td>
+      <td class="mono">${g.bultos}</td>
+      <td class="num">${g.kg ? g.kg.toLocaleString('es-CL') : '—'}</td>
+      <td class="num">${g.m3 ? g.m3.toFixed(2) : '—'}</td>
+      <td class="num">${clp(neto)}</td>
+      <td class="num" style="color:var(--tinta2)">${clp(iva)}</td>
+      <td class="num"><b>${clp(neto + iva)}</b></td>
+      <td>${g.faltan ? '<span class="pill p-al">Sin cubicar</span>'
+        : g.parcial ? '<span class="pill p-ruta">Parcial</span>'
+        : ok ? '<span class="pill p-ok">Recibido</span>' : '<span class="pill p-esp">Pendiente</span>'}</td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#tbFac input[type=checkbox]').forEach(c =>
+    c.onchange = () => {
+      const i = +c.dataset.i;
+      c.checked ? recibidos.add(i) : recibidos.delete(i);
+      pintaFac(); pintaKpis(); pintaAging();
+    });
+  const marc = [...recibidos].map(i => gs[i]).filter(g => g.neto > 0);
+  document.getElementById('chkCount').textContent =
+    recibidos.size ? `${recibidos.size} marcados · ${clp(marc.reduce((a, g) => a + g.neto, 0))} neto` : '';
+  document.getElementById('btnExport').disabled = marc.length === 0;
+  if (!marc.length) document.getElementById('expBox').classList.remove('on');
+}
+
+function exportar() {
+  const gs = V().grupos, v = V();
+  const marc = [...recibidos].map(i => gs[i]).filter(g => g.neto > 0);
+  const head = ['RUT_CLIENTE', 'CLIENTE', 'TRACKING', 'EMBARQUE', 'BULTOS', 'KG', 'M3', 'NETO', 'IVA', 'TOTAL', 'COND_PAGO'];
+  const w = [14, 26, 15, 11, 7, 9, 8, 11, 10, 11, 11];
+  const fmt = r => r.map((c, i) => String(c).padEnd(w[i])).join('').trimEnd();
+  const rows = marc.map(g => {
+    const c = clientePorRut(g.rut) || CLIENTES.find(x => normaliza(x.k) === normaliza(g.cliente));
+    return fmt([c ? c.rut : '(por cargar)', g.cliente, g.tk, v.fecha, g.bultos,
+      Math.round(g.kg), g.m3.toFixed(2), g.neto, ivaGrupo(g),
+      g.neto + ivaGrupo(g), 'CREDITO 15 DIAS']);
+  });
+  const tot = marc.reduce((a, g) => a + g.neto, 0);
+  const totIva = marc.reduce((a, g) => a + ivaGrupo(g), 0);
+  document.getElementById('expPre').textContent =
+    fmt(head) + '\n' + '─'.repeat(120) + '\n' + rows.join('\n') +
+    `\n${'─'.repeat(120)}\n${marc.length} documentos · neto ${clp(tot)} · IVA ${clp(totIva)} · total ${clp(tot + totIva)}`;
+  document.getElementById('expBox').classList.add('on');
+  document.getElementById('expBox').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+
+function pintaAging() {
+  const gs = V().grupos;
+  const emitidas = entregado() ? [...recibidos].map(i => gs[i]).filter(g => g.neto > 0) : [];
+  const pagadas = emitidas.filter(g => rnd(g.cliente + 'p', 10) < 3);
+  const abiertas = emitidas.filter(g => !pagadas.includes(g));
+  const venc = abiertas.filter(g => CREDITO - g.diasEmit - 2 < 0);
+  const pron = abiertas.filter(g => { const d = CREDITO - g.diasEmit - 2; return d >= 0 && d <= 5; });
+  const sin = gs.filter((g, i) => g.neto > 0 && !recibidos.has(i));
+  const S = a => a.reduce((x, g) => x + g.neto, 0);
+  document.getElementById('aging').innerHTML = [
+    ['Sin recibir', clp(S(sin)), sin.length + ' clientes', ''],
+    ['Al día', clp(S(abiertas) - S(venc) - S(pron)), 'dentro de plazo', ''],
+    ['Vence en 5 días', clp(S(pron)), pron.length + ' documentos', 'ambar'],
+    ['Vencido', clp(S(venc)), venc.length + ' documentos', 'rojo'],
+    ['Pagado', clp(S(pagadas)), pagadas.length + ' documentos', 'verde']
+  ].map(([k, v2, n, c]) => `<div class="ag ${c}"><div class="k">${k}</div><div class="v">${v2}</div><div class="n">${n}</div></div>`).join('');
+}
+
+// ---------- tracking ----------
+function calcFlete() {
+  const kg = parseFloat(document.getElementById('tkKg').value) || 0;
+  const m3 = parseFloat(document.getElementById('tkM3').value) || 0;
+  const box = document.getElementById('fleteBox');
+  if (!kg && !m3) { box.style.display = 'none'; return null; }
+  const cli = clienteEscrito();
+  const f = calculaFlete(cli, kg, m3);            // motor unico, vive en clientes.js
+  const iva = ivaLinea(f.cantidad, f.unit);
+  box.style.display = 'block';
+  document.getElementById('fleteTxt').textContent = clp(f.neto);
+  document.getElementById('fleteHint').textContent =
+    f.detalle + ' \u00b7 IVA ' + clp(iva) +
+    (cli && cli.tar ? ' \u00b7 tarifa preferencial $' + cli.tar + '/kg' : '');
+  return {kg, m3, neto: f.neto, tar: f.unit, base: f.base,
+          cantidad: f.cantidad, unit: f.unit, rut: cli ? cli.rut : null};
+}
+
+/* Resuelve lo escrito en el campo Cliente contra el maestro compartido */
+function clienteEscrito() {
+  const t = document.getElementById('tkCli').value.trim();
+  if (!t || typeof CLIENTES === "undefined" || !CLIENTES.length) return null;
+  const n = normaliza(t);
+  const exacto = CLIENTES.find(c => normaliza(c.k) === n || normaliza(c.rs) === n);
+  if (exacto) return exacto;
+  const r = buscaClientes(t);
+  return r.length === 1 ? r[0] : null;
+}
+
+function generarTk() {
+  const cli = document.getElementById('tkCli').value.trim().toUpperCase();
+  if (!cli) { document.getElementById('tkCli').focus(); return; }
+  const f = calcFlete(); if (!f) { document.getElementById('tkKg').focus(); return; }
+  const bul = Math.max(1, parseInt(document.getElementById('tkBul').value) || 1);
+  const v = V();
+  const tk = 'TA-' + yy(v.fecha) + '-' + String(v.grupos.length + generados.length + 1).padStart(3, '0');
+  generados.unshift({
+    tk, cliente: cli, prov: document.getElementById('tkProv').value.trim() || '—',
+    doc: document.getElementById('tkDoc').value.trim() || '—',
+    bultos: bul, kg: f.kg, m3: f.m3, neto: f.neto, embarque: v.fecha,
+    rut: f.rut, cantidad: f.cantidad, unit: f.unit, base: f.base
+  });
+  zIx = 0; pintaTk(); pintaZebra();
+  ['tkCli', 'tkProv', 'tkDoc', 'tkKg', 'tkM3'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('tkBul').value = 1;
+  document.getElementById('fleteBox').style.display = 'none';
+  document.getElementById('tkCli').focus();
+}
+
+function pintaTk() {
+  const t = document.getElementById('tbTk');
+  t.innerHTML = generados.length ? generados.map(g => `<tr>
+    <td class="mono"><b>${g.tk}</b></td><td>${g.cliente}</td><td class="mono">${g.bultos}</td>
+    <td class="num">${g.kg.toLocaleString('es-CL')}</td><td class="num"><b>${clp(g.neto)}</b></td></tr>`).join('')
+    : '<tr><td colspan="5" style="color:var(--tinta2);padding:20px 10px">Todavía no se ha registrado ninguna carga en esta sesión.</td></tr>';
+  const delMaestro = (typeof CLIENTES !== "undefined" ? CLIENTES : []).map(c => c.k);
+  if (typeof iniciaPortal === "function" && !CLIENTES.length) {
+    iniciaPortal().then(() => {
+      const previos = [...new Set(VIAJES.flatMap(v => v.grupos.map(g => g.cliente)))];
+      document.getElementById('cliList').innerHTML =
+        [...new Set([...CLIENTES.map(c => c.k), ...previos])].sort()
+          .map(c => `<option value="${c}">`).join('');
+    });
+  }
+  const deViajes = VIAJES.flatMap(v => v.grupos.map(g => g.cliente));
+  document.getElementById('cliList').innerHTML =
+    [...new Set([...delMaestro, ...deViajes])].sort()
+      .map(c => `<option value="${c}">`).join('');
+}
+
+function pintaZebra() {
+  const box = document.getElementById('zebraBox'), nav = document.getElementById('zebraNav');
+  if (!generados.length) {
+    box.innerHTML = `<div class="zebra" style="align-items:center;justify-content:center;text-align:center;color:#999">
+      <div style="font-size:11px;letter-spacing:.12em">SIN ETIQUETA</div>
+      <div style="font-size:10px;margin-top:8px;max-width:190px;line-height:1.6">Registra una carga y aquí aparece la etiqueta lista para imprimir.</div></div>`;
+    nav.textContent = ''; return;
+  }
+  const g = generados[0], n = Math.min(g.bultos, 99);
+  const b = zIx % n + 1;
+  box.innerHTML = `<div class="zebra">
+    <div class="zh">
+      <div><div class="zco">AVENDAÑO</div><div class="zsub">TRANSPORTES · STGO → NATALES</div></div>
+      <div class="zn">${b}<span style="font-size:13px">/${n}</span></div>
+    </div>
+    <div class="zcli">${g.cliente}</div>
+    <div class="zrow"><span>REMITENTE</span><b>${g.prov.slice(0, 22)}</b></div>
+    <div class="zrow"><span>DOCUMENTO</span><b>${g.doc.slice(0, 20)}</b></div>
+    <div class="zrow"><span>EMBARQUE</span><b>${g.embarque.split('-').reverse().join('-')}</b></div>
+    <div class="zrow"><span>PESO TOTAL</span><b>${g.kg.toLocaleString('es-CL')} kg</b></div>
+    <div class="zrow"><span>VOLUMEN</span><b>${g.m3.toLocaleString('es-CL')} m³</b></div>
+    <div class="zbar">${barcode39(g.tk + '-' + String(b).padStart(2, '0'))}
+      <div class="ztk">${g.tk}-${String(b).padStart(2, '0')}</div>
+      <div class="zft">Consulta tu carga en avendano.cl/seguimiento</div>
+    </div></div>`;
+  nav.innerHTML = n > 1
+    ? `Bulto ${b} de ${n}. <button class="btn sec" style="padding:6px 11px;margin-top:8px" id="zNext">Ver siguiente etiqueta</button>`
+    : `Etiqueta única para esta carga.`;
+  const nx = document.getElementById('zNext');
+  if (nx) nx.onclick = () => { zIx++; pintaZebra(); };
+}
+
+// ---------- portal cliente ----------
+function pintaDemo() {
+  const ej = VIAJES.flatMap(v => v.grupos).filter(g => g.neto > 0).slice(0, 3);
+  document.getElementById('cDemo').innerHTML = 'Para la demostración, prueba con:<br>' +
+    ej.map(g => `<button data-k="${g.tk}">${g.tk}</button> — ${g.cliente}`).join('<br>');
+  document.querySelectorAll('#cDemo button').forEach(b =>
+    b.onclick = () => { document.getElementById('cInp').value = b.dataset.k; buscar(); });
+}
+
+function buscar() {
+  const q = document.getElementById('cInp').value.trim().toUpperCase().replace(/\s/g, '');
+  const todos = VIAJES.flatMap(v => v.grupos.map(g => ({...g, viaje: v})));
+  const hit = todos.filter(g => g.tk === q || g.fono.replace(/\s/g, '') === q || g.cliente === q);
+  const err = document.getElementById('cErr');
+  if (!hit.length) { err.textContent = 'No encontramos carga con ese dato. Revisa el número e inténtalo de nuevo.'; err.hidden = false; return; }
+  err.hidden = true;
+  const i = fase();
+  document.getElementById('cRes').innerHTML = `<div class="cres">
+    <button class="back" id="cBack">← Consultar otra carga</button>
+    ${hit.map(g => `<div class="ccard">
+      <div class="ctk">${g.tk}</div>
+      <div class="ccli">${g.cliente}</div>
+      <div class="cmeta">${g.bultos} bultos · ${g.kg ? g.kg.toLocaleString('es-CL') + ' kg' : 'por cubicar'} · embarque ${g.viaje.fecha.split('-').reverse().join('-')}</div>
+      <div style="margin-top:18px">
+        ${FASES.map((f, k) => `<div class="cst ${k < i ? 'done' : k === i ? 'now' : 'pend'}">
+          <span class="d"></span><span>${f.t}</span>
+          <span class="tm">${k < i ? '✓' : k === i ? 'ahora' : ''}</span></div>`).join('')}
+      </div>
+      <div class="cbultos"><div class="h">Bultos de este envío</div>
+        ${g.items.map(c => `<div class="b"><span>${g.tk}·${String(c.sub).padStart(2, '0')} · ${c.cantidad}</span>
+          <span>${c.proveedor.slice(0, 24)}</span></div>`).join('')}</div>
+    </div>`).join('')}
+    <div class="oculto">El cliente ve solo su propia carga y su estado. No ve el flete, ni la tarifa aplicada, ni los datos de otros clientes del embarque, ni la ocupación del camión.</div>
+  </div>`;
+  document.getElementById('cLogin').hidden = true;
+  document.getElementById('cRes').hidden = false;
+  document.getElementById('cBack').onclick = () => {
+    document.getElementById('cRes').hidden = true;
+    document.getElementById('cLogin').hidden = false;
+    document.getElementById('cInp').value = '';
+  };
+}
+
+// ---------- conmutador ----------
+function portal(esInterno) {
+  document.getElementById('interno').hidden = !esInterno;
+  document.getElementById('cliente').hidden = esInterno;
+  document.getElementById('btnInterno').setAttribute('aria-pressed', esInterno);
+  document.getElementById('btnCliente').setAttribute('aria-pressed', !esInterno);
+  document.getElementById('whoTxt').textContent = esInterno
+    ? 'Sesión: operaciones · Santiago y Puerto Natales'
+    : 'Acceso público · sin sesión';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+document.getElementById('btnInterno').onclick = () => portal(true);
+document.getElementById('btnCliente').onclick = () => portal(false);
+
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(o => {
+    const sel = o === t;
+    o.setAttribute('aria-selected', sel);
+    document.getElementById(o.getAttribute('aria-controls')).hidden = !sel;
+  });
+});
+document.getElementById('prog').addEventListener('input', e => { prog = +e.target.value; pintaRail(); pintaAging(); });
+document.getElementById('chkAll').onclick = () => { V().grupos.forEach((g, i) => recibidos.add(i)); pintaFac(); pintaKpis(); pintaAging(); };
+document.getElementById('chkNone').onclick = () => { recibidos.clear(); pintaFac(); pintaKpis(); pintaAging(); };
+document.getElementById('btnExport').onclick = exportar;
+document.getElementById('btnGen').onclick = generarTk;
+['tkKg', 'tkM3', 'tkCli'].forEach(id => document.getElementById(id).addEventListener('input', calcFlete));
+document.getElementById('cBtn').onclick = buscar;
+document.getElementById('cInp').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+
+function render() { pintaEmb(); pintaRail(); pintaKpis(); pintaRegistro(); pintaFac(); pintaAging(); pintaTk(); pintaZebra(); pintaDemo(); }
+render();
+
+</script>
+</body>
+</html>

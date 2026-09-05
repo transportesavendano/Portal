@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cotizador de fletes · Superfrut Transportes</title>
+<style>
+  :root{
+    --marca:#2D2E82; --marca-2:#35A8E0; --tinta:#16202B; --tinta-2:#4A5568;
+    --borde:#D8DEE6; --fondo:#F4F6F9; --ok:#2E7D5B; --wa:#25D366;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:transparent; color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.55;
+  }
+  .caja{max-width:620px; margin:0 auto; background:#fff; border:1px solid var(--borde);
+    border-radius:16px; overflow:hidden}
+  .cab{background:var(--marca); color:#fff; padding:20px 24px}
+  .cab h2{margin:0; font-size:21px; font-weight:600}
+  .cab p{margin:5px 0 0; font-size:14px; opacity:.8}
+  .franja{height:4px; background:var(--marca-2)}
+  .cuerpo{padding:22px 24px 24px}
+
+  fieldset{border:0; padding:0; margin:0 0 20px}
+  legend, .rotulo{font-size:14px; font-weight:600; color:var(--tinta-2); margin-bottom:9px; padding:0}
+
+  .opciones{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .op{background:#fff; border:2px solid var(--borde); border-radius:11px; padding:14px 12px;
+    font:inherit; font-size:15px; font-weight:600; color:var(--tinta); cursor:pointer; text-align:center; line-height:1.3}
+  .op small{display:block; font-weight:400; font-size:13px; color:var(--tinta-2); margin-top:3px}
+  .op[aria-pressed=true]{border-color:var(--marca); background:#F0F1FA}
+  .op:focus-visible{outline:3px solid var(--marca-2); outline-offset:2px}
+
+  .campos{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .campo label{display:block; font-size:13px; color:var(--tinta-2); margin-bottom:5px}
+  input{width:100%; font:inherit; font-size:16px; padding:12px 13px; border:2px solid var(--borde);
+    border-radius:10px; background:#fff; color:var(--tinta)}
+  input:focus{outline:0; border-color:var(--marca)}
+  .ancho-total{grid-column:1/-1}
+
+  .ayuda{font-size:13px; color:var(--tinta-2); margin:9px 0 0}
+
+  .resultado{margin-top:22px; border-radius:13px; padding:22px; text-align:center;
+    background:var(--fondo); border:1px solid var(--borde)}
+  .resultado.listo{background:var(--marca); border-color:var(--marca); color:#fff}
+  .resultado .rot{font-size:14px; opacity:.85; margin-bottom:2px}
+  .resultado .monto{font-size:38px; font-weight:700; line-height:1.15; letter-spacing:-.01em}
+  .resultado .fino{font-size:13px; opacity:.8; margin-top:6px}
+  .resultado.espera{color:var(--tinta-2); font-size:15px}
+
+  .acciones{display:none; margin-top:16px; gap:10px; grid-template-columns:1fr}
+  .acciones.ver{display:grid}
+  .btn{border:0; border-radius:11px; padding:15px; font:inherit; font-size:16px; font-weight:600;
+    cursor:pointer; text-align:center; text-decoration:none; display:block}
+  .btn.principal{background:var(--marca-2); color:#08283A}
+  .btn.principal:hover{filter:brightness(1.06)}
+  .btn.wasap{background:var(--wa); color:#06331A}
+  .btn.wasap:hover{filter:brightness(1.05)}
+
+  .contacto{display:none; margin-top:16px; background:var(--fondo); border:1px solid var(--borde);
+    border-radius:13px; padding:18px}
+  .contacto.ver{display:block}
+  .contacto h3{margin:0 0 3px; font-size:17px}
+  .contacto p.sub{margin:0 0 14px; font-size:14px; color:var(--tinta-2)}
+  .contacto .campos{grid-template-columns:1fr 1fr}
+
+  .consiente{display:flex; gap:10px; align-items:flex-start; margin-top:14px; font-size:13px;
+    color:var(--tinta-2); line-height:1.45; cursor:pointer}
+  .consiente input{width:18px; height:18px; flex:none; margin-top:1px; accent-color:var(--marca)}
+  .aviso{margin-top:18px; font-size:12.5px; color:var(--tinta-2); line-height:1.5;
+    border-top:1px solid var(--borde); padding-top:14px}
+  .fuera{background:#FFF7E6; border:1px solid #E6C77A; border-radius:11px; padding:15px;
+    margin-top:16px; font-size:14.5px; display:none}
+  .fuera.ver{display:block}
+  .gracias{display:none; text-align:center; padding:26px 10px}
+  .gracias.ver{display:block}
+  .gracias .tic{width:64px; height:64px; border-radius:50%; background:var(--ok); color:#fff;
+    font-size:34px; line-height:64px; margin:0 auto 14px}
+  .gracias h3{margin:0 0 6px; font-size:20px}
+  .gracias p{margin:0; color:var(--tinta-2); font-size:15px}
+
+  @media(max-width:520px){
+    .campos{grid-template-columns:1fr 1fr}
+    .contacto .campos{grid-template-columns:1fr}
+    .resultado .monto{font-size:32px}
+  }
+</style>
+</head>
+<body>
+
+<div class="caja">
+  <div class="cab">
+    <h2>Cotiza tu envío</h2>
+    <p>Valor referencial inmediato, con IVA incluido.</p>
+  </div>
+  <div class="franja"></div>
+
+  <div class="cuerpo" id="formulario">
+
+    <fieldset>
+      <div class="rotulo">¿Hacia dónde va la carga?</div>
+      <div class="opciones">
+        <button type="button" class="op" id="r-ida" aria-pressed="true" onclick="setRuta('ida')">
+          Santiago → Puerto Natales
+        </button>
+        <button type="button" class="op" id="r-vuelta" aria-pressed="false" onclick="setRuta('vuelta')">
+          Puerto Natales → Santiago
+        </button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="rotulo">¿Cómo viaja?</div>
+      <div class="opciones">
+        <button type="button" class="op" id="m-terrestre" aria-pressed="true" onclick="setModo('terrestre')">
+          Terrestre
+          <small>Nuestros camiones</small>
+        </button>
+        <button type="button" class="op" id="m-aereo" aria-pressed="false" onclick="setModo('aereo')">
+          Aéreo
+          <small>Carga urgente</small>
+        </button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="rotulo">Peso total</div>
+      <div class="campos">
+        <div class="campo ancho-total">
+          <label for="kg">Kilos</label>
+          <input type="number" id="kg" inputmode="decimal" min="0" placeholder="0" oninput="calcula()">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="bloque-medidas">
+      <div class="rotulo">Medidas del bulto</div>
+      <div class="campos">
+        <div class="campo">
+          <label for="largo">Largo (cm)</label>
+          <input type="number" id="largo" inputmode="decimal" min="0" placeholder="0" oninput="calcula()">
+        </div>
+        <div class="campo">
+          <label for="ancho">Ancho (cm)</label>
+          <input type="number" id="ancho" inputmode="decimal" min="0" placeholder="0" oninput="calcula()">
+        </div>
+        <div class="campo">
+          <label for="alto">Alto (cm)</label>
+          <input type="number" id="alto" inputmode="decimal" min="0" placeholder="0" oninput="calcula()">
+        </div>
+        <div class="campo ancho-total">
+          <label for="bultos">¿Cuántos bultos de ese tamaño?</label>
+          <input type="number" id="bultos" inputmode="numeric" min="1" value="1" oninput="calcula()">
+        </div>
+      </div>
+      <p class="ayuda">Si son de distinto tamaño, use el más grande y le confirmamos el valor exacto.</p>
+    </fieldset>
+
+    <div class="resultado espera" id="resultado">
+      Complete el peso y las medidas para ver el valor.
+    </div>
+
+    <div class="fuera" id="fuera">
+      Por el volumen de esta carga preferimos cotizarla a medida, para darle el mejor precio posible.
+      Déjenos sus datos y lo contactamos.
+    </div>
+
+    <div class="acciones" id="acciones">
+      <button class="btn principal" onclick="abreContacto()">Quiero que me contacten</button>
+      <a class="btn wasap" id="wa" href="#" target="_blank" rel="noopener">Escribir por WhatsApp</a>
+    </div>
+
+    <div class="contacto" id="contacto">
+      <h3>Sus datos</h3>
+      <p class="sub">Le confirmamos el valor y los días de salida.</p>
+      <div class="campos">
+        <div class="campo">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" autocomplete="name">
+        </div>
+        <div class="campo">
+          <label for="fono">Teléfono</label>
+          <input type="tel" id="fono" inputmode="tel" autocomplete="tel">
+        </div>
+        <div class="campo ancho-total">
+          <label for="correo">Correo</label>
+          <input type="email" id="correo" autocomplete="email">
+        </div>
+        <div class="campo ancho-total">
+          <label for="que">¿Qué necesita enviar?</label>
+          <input type="text" id="que" placeholder="Opcional">
+        </div>
+      </div>
+      <label class="consiente">
+        <input type="checkbox" id="acepta">
+        <span>Autorizo a Transportes Avendaño y Avendaño Ltda. a usar estos datos para
+        responder mi consulta comercial. Se conservan mientras dure la gestión y puedo
+        pedir su eliminación escribiendo a finanzastransportes@gruposuperfrut.cl.</span>
+      </label>
+      <button class="btn principal" style="margin-top:14px" id="btn-enviar" onclick="envia()">Enviar</button>
+    </div>
+
+    <p class="aviso">
+      Valor referencial para carga general, calculado con las tarifas vigentes e IVA incluido.
+      No aplica a carga peligrosa, animales vivos ni traslados especiales. Para envíos marítimos,
+      a Punta Arenas o a otros destinos de Magallanes, escríbanos y lo cotizamos a medida.
+    </p>
+  </div>
+
+  <div class="gracias" id="gracias">
+    <div class="tic">✓</div>
+    <h3>Recibimos su solicitud</h3>
+    <p>Lo contactamos dentro del horario de oficina, de lunes a viernes de 09:00 a 16:00.</p>
+  </div>
+</div>
+
+<script>
+/* Esta página es PÚBLICA: no lleva ninguna clave. Solo puede AGREGAR una
+   cotización mediante /cotizacion, que es un endpoint de escritura pura.
+   No puede leer la lista ni reemplazarla. */
+const API  = "https://transportes-api.tonnoaf.workers.dev";
+const FONO = "56947388270";          // oficina de transportes, Puerto Natales
+
+/* Tarifas vigentes, mismas en ambos sentidos.
+   DUPLICACIÓN ACEPTADA: este archivo NO puede cargar clientes.js, porque ese
+   archivo contiene el RUT y el domicilio de todos los clientes y esta página es
+   pública. Si cambian las tarifas, hay que actualizarlas en los dos lugares.
+   La duplicación desaparece cuando el cálculo se mueva al Worker. */
+const T = { kg:500, m3:130000, minima:25000, aereoKg:1200, aereoMinima:30000, tope_m3:12 };
+
+let ruta = "ida", modo = "terrestre", ultima = null;
+
+function setRuta(r){
+  ruta = r;
+  document.getElementById("r-ida").setAttribute("aria-pressed", r === "ida");
+  document.getElementById("r-vuelta").setAttribute("aria-pressed", r === "vuelta");
+  calcula();
+}
+
+function setModo(m){
+  modo = m;
+  document.getElementById("m-terrestre").setAttribute("aria-pressed", m === "terrestre");
+  document.getElementById("m-aereo").setAttribute("aria-pressed", m === "aereo");
+  document.getElementById("bloque-medidas").style.display = (m === "aereo") ? "none" : "";
+  calcula();
+}
+
+const num = id => Number(document.getElementById(id).value) || 0;
+const pesos = n => "$" + Math.round(n).toLocaleString("es-CL");
+
+function calcula(){
+  const kg = num("kg");
+  const caja  = document.getElementById("resultado");
+  const acc   = document.getElementById("acciones");
+  const fuera = document.getElementById("fuera");
+
+  let m3 = 0;
+  if(modo === "terrestre"){
+    const bultos = Math.max(1, num("bultos"));
+    m3 = (num("largo")/100) * (num("ancho")/100) * (num("alto")/100) * bultos;
+  }
+
+  if(kg <= 0 && m3 <= 0){
+    caja.className = "resultado espera";
+    caja.textContent = "Complete el peso y las medidas para ver el valor.";
+    acc.className = "acciones";
+    fuera.className = "fuera";
+    ultima = null;
+    return;
+  }
+
+  /* Cargas muy grandes se cotizan a medida: un camión completo no se
+     tarifica igual que un pallet suelto. */
+  if(m3 > T.tope_m3 || kg > 8000){
+    caja.className = "resultado espera";
+    caja.textContent = "Carga de gran volumen.";
+    fuera.className = "fuera ver";
+    acc.className = "acciones ver";
+    ultima = {kg, m3, ruta, modo, neto:null, total:null};
+    preparaWhatsapp();
+    return;
+  }
+  fuera.className = "fuera";
+
+  let neto;
+  if(modo === "aereo"){
+    neto = Math.max(Math.round(kg * T.aereoKg), T.aereoMinima);
+  } else {
+    neto = Math.max(Math.round(kg * T.kg), Math.round(m3 * T.m3), T.minima);
+  }
+  const total = Math.round(neto * 1.19);
+
+  caja.className = "resultado listo";
+  caja.innerHTML = '<div class="rot">Valor de su envío</div>' +
+                   '<div class="monto">' + pesos(total) + '</div>' +
+                   '<div class="fino">IVA incluido' +
+                   (modo === "aereo" ? ' · carga aérea' : '') + '</div>';
+
+  acc.className = "acciones ver";
+  ultima = {kg, m3, ruta, modo, neto, total};
+  preparaWhatsapp();
+}
+
+function textoResumen(){
+  if(!ultima) return "";
+  const tramo = ultima.ruta === "ida" ? "Santiago a Puerto Natales" : "Puerto Natales a Santiago";
+  const partes = [
+    "Hola, coticé un envío en el sitio web:",
+    "",
+    "Trayecto: " + tramo,
+    "Modalidad: " + (ultima.modo === "aereo" ? "aérea" : "terrestre"),
+    ultima.kg ? "Peso: " + ultima.kg + " kg" : null,
+    ultima.m3 ? "Volumen: " + ultima.m3.toFixed(3) + " m³" : null,
+    ultima.total ? "Valor mostrado: " + pesos(ultima.total) + " con IVA"
+                 : "Carga de gran volumen, necesito cotización a medida"
+  ];
+  return partes.filter(Boolean).join("\n");
+}
+
+function preparaWhatsapp(){
+  document.getElementById("wa").href =
+    "https://wa.me/" + FONO + "?text=" + encodeURIComponent(textoResumen());
+}
+
+function abreContacto(){
+  const c = document.getElementById("contacto");
+  c.className = "contacto ver";
+  c.scrollIntoView({behavior:"smooth", block:"nearest"});
+  document.getElementById("nombre").focus();
+}
+
+async function envia(){
+  const nombre = document.getElementById("nombre").value.trim();
+  const fono   = document.getElementById("fono").value.trim();
+  const correo = document.getElementById("correo").value.trim();
+  if(!nombre || (!fono && !correo)){
+    alert("Necesitamos su nombre y un teléfono o un correo para poder responderle.");
+    return;
+  }
+  if(!document.getElementById("acepta").checked){
+    alert("Para poder contactarlo necesitamos su autorización para usar estos datos.");
+    return;
+  }
+  const btn = document.getElementById("btn-enviar");
+  btn.disabled = true; btn.textContent = "Enviando…";
+
+  const solicitud = {
+    nombre, fono, correo,
+    que: document.getElementById("que").value.trim(),
+    ruta: ultima ? ultima.ruta : null,
+    modo: ultima ? ultima.modo : null,
+    kg: ultima ? ultima.kg : null,
+    m3: ultima ? Number(ultima.m3.toFixed(3)) : null,
+    neto: ultima ? ultima.neto : null,
+    total: ultima ? ultima.total : null
+  };
+
+  try{
+    const r = await fetch(API + "/cotizacion", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(solicitud)
+    });
+    if(r.status === 429) throw new Error("Recibimos muchas solicitudes seguidas desde su conexión.");
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    document.getElementById("formulario").style.display = "none";
+    document.getElementById("gracias").className = "gracias ver";
+  }catch(e){
+    btn.disabled = false; btn.textContent = "Enviar";
+    /* Que un fallo nuestro no le cueste el contacto al cliente */
+    if(confirm("No pudimos registrar su solicitud en este momento.\n\n¿Prefiere escribirnos por WhatsApp?")){
+      const extra = "\n\nNombre: " + nombre + (fono ? "\nTeléfono: " + fono : "") +
+                    (correo ? "\nCorreo: " + correo : "");
+      window.open("https://wa.me/" + FONO + "?text=" +
+                  encodeURIComponent(textoResumen() + extra), "_blank", "noopener");
+    }
+  }
+}
+
+setModo("terrestre");
+</script>
+</body>
+</html>

@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2D2E82">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="icon" href="logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Facturar">
+<title>Dejar una orden de facturación</title>
+<style>
+  :root{
+    --tinta:#16202B; --tinta-2:#33465C; --papel:#FFFFFF; --fondo:#EEF1F4;
+    --marca:#2D2E82; --marca-2:#35A8E0; --senal:#F2B01E; --senal-osc:#B8830C; --ok:#2E7D5B; --alerta:#B33A2B;
+    --borde:#D3DAE1;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; background:var(--fondo); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:19px; line-height:1.5;
+  }
+  header{
+    background:var(--tinta); color:#fff; padding:18px 20px calc(18px + env(safe-area-inset-bottom,0px));
+    display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:20;
+  }
+  header .volver{
+    flex:none; width:46px; height:46px; border-radius:11px; background:rgba(255,255,255,.14);
+    color:#fff; text-decoration:none; font-size:32px; line-height:42px; text-align:center; font-weight:600;
+  }
+  header .volver:active{background:rgba(255,255,255,.28)}
+  header .logo, header .mono-logo{width:54px; height:54px; flex:none; border-radius:11px; object-fit:contain; background:#fff}
+  header .mono-logo{background:var(--senal); color:var(--tinta); display:flex; align-items:center;
+    justify-content:center; font-size:21px; font-weight:800; letter-spacing:.02em}
+  header .marca{font-size:15px; letter-spacing:.02em; opacity:.72}
+  header h1{font-size:21px; margin:2px 0 0; font-weight:600; line-height:1.2}
+  .franja{height:5px; background:var(--marca-2)}
+  main{padding:20px 16px 120px; max-width:640px; margin:0 auto}
+
+  .paso{background:var(--papel); border:1px solid var(--borde); border-radius:14px; padding:18px; margin-bottom:16px}
+  .paso h2{font-size:20px; margin:0 0 4px; font-weight:600}
+  .paso p.ayuda{margin:0 0 14px; color:var(--tinta-2); font-size:16px}
+
+  input[type=text], input[type=number], textarea, input[type=search]{
+    width:100%; font:inherit; font-size:19px; padding:14px 15px;
+    border:2px solid var(--borde); border-radius:11px; background:#fff; color:var(--tinta);
+  }
+  input:focus, textarea:focus{outline:3px solid var(--senal); outline-offset:1px; border-color:var(--tinta-2)}
+  textarea{min-height:110px; resize:vertical}
+
+  .lista{margin-top:12px; max-height:340px; overflow-y:auto; border:1px solid var(--borde); border-radius:11px}
+  .cli{
+    display:block; width:100%; text-align:left; background:#fff; border:0;
+    border-bottom:1px solid var(--borde); padding:15px 16px; font:inherit; cursor:pointer;
+  }
+  .cli:last-child{border-bottom:0}
+  .cli:active{background:#FFF6E0}
+  .cli b{display:block; font-size:19px; font-weight:600}
+  .cli span{display:block; font-size:15px; color:var(--tinta-2); margin-top:2px}
+  .cli .falta{color:var(--alerta)}
+
+  .elegido{
+    background:var(--tinta); color:#fff; border-radius:12px; padding:16px; display:flex;
+    justify-content:space-between; align-items:flex-start; gap:12px;
+  }
+  .elegido b{font-size:19px; display:block}
+  .elegido span{font-size:15px; opacity:.8; display:block; margin-top:3px}
+  .cambiar{
+    background:transparent; color:var(--senal); border:2px solid var(--senal);
+    border-radius:9px; padding:9px 14px; font:inherit; font-size:16px; cursor:pointer; flex:none;
+  }
+
+  .tresbotones{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .modo{
+    background:#fff; border:2px solid var(--borde); border-radius:12px; padding:18px 12px;
+    font:inherit; font-size:18px; font-weight:600; cursor:pointer; color:var(--tinta); line-height:1.3;
+  }
+  .modo small{display:block; font-weight:400; font-size:15px; color:var(--tinta-2); margin-top:4px}
+  .modo[aria-pressed=true]{border-color:var(--tinta); background:#FFF6E0}
+
+  .campos{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:14px}
+  .campos[hidden]{display:none}   /* el atributo hidden pierde contra display:grid */
+  label{display:block; font-size:16px; color:var(--tinta-2); margin-bottom:6px}
+  .full{grid-column:1/-1}
+
+  .calculo{
+    margin-top:14px; background:#F6F8FA; border-left:5px solid var(--senal);
+    border-radius:0 10px 10px 0; padding:14px 16px; font-size:16px; color:var(--tinta-2);
+  }
+  .calculo strong{display:block; font-size:26px; color:var(--tinta); margin-bottom:4px; font-weight:600}
+
+  .guardar{
+    position:fixed; left:0; right:0; bottom:0; padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));
+    background:linear-gradient(to top, var(--fondo) 72%, rgba(238,241,244,0));
+  }
+  .guardar button{
+    width:100%; max-width:640px; margin:0 auto; display:block;
+    background:var(--senal); color:var(--tinta); border:0; border-radius:13px;
+    padding:20px; font:inherit; font-size:21px; font-weight:700; cursor:pointer;
+  }
+  .guardar button:disabled{background:#C9D0D7; color:#7B8794; cursor:default}
+  .guardar button:active:not(:disabled){background:var(--senal-osc)}
+
+  .aviso{background:#FFF4D6; border-left:5px solid var(--senal-osc); padding:13px 15px; border-radius:0 10px 10px 0; font-size:16px; margin-top:12px}
+
+  /* Confirmación */
+  #listo{display:none; text-align:center; padding:50px 20px}
+  #listo .tic{
+    width:96px; height:96px; border-radius:50%; background:var(--ok); color:#fff;
+    font-size:52px; line-height:96px; margin:0 auto 20px;
+  }
+  #listo h2{font-size:27px; margin:0 0 8px}
+  #listo p{font-size:19px; color:var(--tinta-2); margin:0 0 28px}
+  #listo .wa{
+    display:block; max-width:420px; margin:0 auto 14px; background:#25D366; color:#06331A;
+    border:0; border-radius:12px; padding:19px 26px; font-size:20px; font-weight:700;
+    text-decoration:none; cursor:pointer;
+  }
+  #listo .wa:active{background:#1EB255}
+  #listo button{
+    background:var(--tinta); color:#fff; border:0; border-radius:12px; padding:18px 26px;
+    font:inherit; font-size:19px; font-weight:600; cursor:pointer; margin:0 6px 12px;
+  }
+
+  /* Órdenes recientes */
+  .recientes{margin-top:26px}
+  .recientes h2{font-size:19px; margin:0 0 12px; font-weight:600}
+  .filtros{display:flex; gap:10px; margin-bottom:12px}
+  .filtro{flex:1; background:#fff; border:2px solid var(--borde); border-radius:11px; padding:13px 10px;
+    font:inherit; font-size:17px; font-weight:600; color:var(--tinta-2); cursor:pointer}
+  .filtro[aria-pressed=true]{border-color:var(--marca); background:var(--marca); color:#fff}
+  .orden .wa-mini{
+    display:block; margin-top:11px; background:#25D366; color:#06331A; text-decoration:none;
+    border-radius:10px; padding:13px; text-align:center; font-size:17px; font-weight:700;
+  }
+  .orden .wa-mini:active{background:#1EB255}
+  .orden.avisada{border-left-color:var(--ok)}
+  .e-env{background:#E3F1EA; color:var(--ok)}
+  .orden{background:#fff; border:1px solid var(--borde); border-left:5px solid var(--senal); border-radius:0 12px 12px 0; padding:14px 16px; margin-bottom:10px}
+  .orden.lista_{border-left-color:var(--ok)}
+  .orden b{font-size:18px}
+  .orden .meta{font-size:15px; color:var(--tinta-2); margin-top:3px}
+  .estado{display:inline-block; font-size:14px; font-weight:600; padding:3px 10px; border-radius:20px; margin-top:8px}
+  .e-pend{background:#FFF4D6; color:var(--senal-osc)}
+  .e-fact{background:#E3F1EA; color:var(--ok)}
+  .vacio{color:var(--tinta-2); font-size:16px}
+  .cargando{color:var(--tinta-2); font-size:16px; padding:10px 0}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="volver" href="index.html" aria-label="Volver al inicio">‹</a>
+  <img src="logo.png" alt="" class="logo" onerror="this.replaceWith(monograma())">
+  <div>
+    <div class="marca">Superfrut Transportes · Puerto Natales</div>
+    <h1>Dejar una orden de facturación</h1>
+  </div>
+</header>
+<div class="franja"></div>
+
+<main id="formulario">
+
+  <!-- 1. Cliente -->
+  <section class="paso">
+    <h2>¿A quién se le factura?</h2>
+    <p class="ayuda">Escriba las primeras letras del nombre.</p>
+    <div id="cliente-buscador">
+      <input type="search" id="q" placeholder="Buscar cliente" autocomplete="off" enterkeyhint="search">
+      <div class="lista" id="lista"></div>
+    </div>
+    <div id="cliente-elegido" hidden></div>
+  </section>
+
+  <!-- 2. Qué se factura -->
+  <section class="paso">
+    <h2>¿Qué se factura?</h2>
+    <p class="ayuda">Puede dictarlo con el micrófono del teclado.</p>
+    <textarea id="detalle" placeholder="Por ejemplo: flete Santiago Natales, 3 palets, guía 4520"></textarea>
+  </section>
+
+  <!-- 3. Monto o carga -->
+  <section class="paso">
+    <h2>¿Cuánto se cobra?</h2>
+    <p class="ayuda">Elija una de las dos formas.</p>
+    <div class="tresbotones">
+      <button class="modo" id="m-monto" aria-pressed="true" onclick="setModo('monto')">
+        Un monto
+        <small>Usted pone el valor</small>
+      </button>
+      <button class="modo" id="m-carga" aria-pressed="false" onclick="setModo('carga')">
+        Camión
+        <small>Peso y volumen</small>
+      </button>
+      <button class="modo" id="m-aereo" aria-pressed="false" onclick="setModo('aereo')">
+        Avión
+        <small>Solo kilos</small>
+      </button>
+    </div>
+
+    <div id="campos-monto" class="campos">
+      <div class="full">
+        <label for="monto">Monto neto, sin IVA</label>
+        <input type="number" id="monto" inputmode="numeric" placeholder="150000" oninput="pinta()">
+      </div>
+    </div>
+
+    <div id="campos-aereo" class="campos" hidden>
+      <div class="full">
+        <label for="kga">Kilos que van por avión</label>
+        <input type="number" id="kga" inputmode="decimal" placeholder="0" oninput="pinta()">
+      </div>
+    </div>
+
+    <div id="campos-carga" class="campos" hidden>
+      <div>
+        <label for="kg">Kilos</label>
+        <input type="number" id="kg" inputmode="decimal" placeholder="0" oninput="pinta()">
+      </div>
+      <div>
+        <label for="m3">Metros cúbicos</label>
+        <input type="number" id="m3" inputmode="decimal" step="0.001" placeholder="0" oninput="pinta()">
+      </div>
+    </div>
+
+    <div class="calculo" id="calculo" hidden></div>
+  </section>
+
+  <section class="paso">
+    <h2>¿Algo más que agregar?</h2>
+    <p class="ayuda">Opcional. Cualquier cosa que haya que tener en cuenta.</p>
+    <textarea id="nota" style="min-height:80px" placeholder="Opcional"></textarea>
+  </section>
+
+  <div class="recientes" id="seccion-ordenes">
+    <h2>Sus órdenes</h2>
+    <div class="filtros">
+      <button class="filtro" id="f-enviar" aria-pressed="true" onclick="setFiltro('enviar')">Por enviar</button>
+      <button class="filtro" id="f-todas" aria-pressed="false" onclick="setFiltro('todas')">Todas</button>
+    </div>
+    <input type="search" id="buscar" placeholder="Buscar por cliente o descripción"
+           autocomplete="off" oninput="pintaRecientes()" style="margin-bottom:12px">
+    <div id="recientes"><div class="cargando">Buscando…</div></div>
+  </div>
+</main>
+
+<div class="guardar" id="barra">
+  <button id="btn" disabled onclick="guardar()">Guardar la orden</button>
+</div>
+
+<div id="listo">
+  <div class="tic">✓</div>
+  <h2>Orden guardada</h2>
+  <p id="listo-txt"></p>
+  <a id="avisar" class="wa" href="#" target="_blank" rel="noopener">Avisarle a Toño por WhatsApp</a>
+  <button onclick="location.reload()">Dejar otra orden</button>
+</div>
+
+<script src="ta-lib.js?v=1"></script>
+<script>
+/* Si todavía no se sube logo.png, se muestra un monograma en su lugar */
+function monograma(){
+  const d = document.createElement("div");
+  d.className = "mono-logo"; d.textContent = "TA"; d.setAttribute("aria-hidden","true");
+  return d;
+}
+
+const CLAVE = "ta_ordenes";
+let cliente = null, modo = "monto";
+
+/* ---------- Cliente ---------- */
+function pintaLista(q){
+  const res = buscaClientes(q).slice(0, 60);
+  const el = document.getElementById("lista");
+  if(!res.length){
+    el.innerHTML = '<div style="padding:16px;color:#33465C">No aparece ese cliente. Escríbalo en «¿Qué se factura?» y se completa después.</div>';
+    return;
+  }
+  el.innerHTML = res.map((c,i) =>
+    '<button class="cli" onclick="elige(\''+c.rut+'\')">' +
+      '<b>'+c.k+'</b>' +
+      '<span'+(c.ok?'':' class="falta"')+'>'+ c.rs + (c.ok ? '' : ' — faltan datos, se completan después') +'</span>' +
+    '</button>'
+  ).join("");
+}
+function elige(rut){
+  cliente = clientePorRut(rut);
+  document.getElementById("cliente-buscador").hidden = true;
+  const e = document.getElementById("cliente-elegido");
+  e.hidden = false;
+  e.innerHTML =
+    '<div class="elegido"><div><b>'+cliente.k+'</b><span>'+cliente.rs+'</span><span>'+cliente.rut+'</span></div>' +
+    '<button class="cambiar" onclick="deshacer()">Cambiar</button></div>' +
+    (cliente.reg ? '<div class="aviso">'+cliente.reg+'</div>' : '') +
+    (cliente.nota ? '<div class="aviso">'+cliente.nota+'</div>' : '');
+  pinta();
+}
+function deshacer(){
+  cliente = null;
+  document.getElementById("cliente-buscador").hidden = false;
+  document.getElementById("cliente-elegido").hidden = true;
+  pinta();
+}
+document.getElementById("q").addEventListener("input", e => pintaLista(e.target.value));
+
+/* ---------- Modo ---------- */
+function setModo(m){
+  modo = m;
+  ["monto","carga","aereo"].forEach(x =>
+    document.getElementById("m-"+x).setAttribute("aria-pressed", m===x));
+  document.getElementById("campos-monto").hidden = (m!=="monto");
+  document.getElementById("campos-carga").hidden = (m!=="carga");
+  document.getElementById("campos-aereo").hidden = (m!=="aereo");
+  pinta();
+}
+
+/* ---------- Cálculo en vivo ---------- */
+function cifras(){
+  if(modo==="monto"){
+    const n = Math.round(Number(document.getElementById("monto").value)||0);
+    if(n<=0) return null;
+    return {base:"MONTO", cantidad:1, unit:n, neto:n, detalle:"Monto puesto a mano"};
+  }
+  if(modo==="aereo"){
+    const kga = Number(document.getElementById("kga").value)||0;
+    if(kga<=0) return null;
+    return calculaAereo(kga);
+  }
+  const kg = Number(document.getElementById("kg").value)||0;
+  const m3 = Number(document.getElementById("m3").value)||0;
+  if(kg<=0 && m3<=0) return null;
+  return calculaFlete(cliente, kg, m3);
+}
+function pinta(){
+  const c = cifras();
+  const caja = document.getElementById("calculo");
+  if(!c){ caja.hidden = true; }
+  else{
+    const iva = ivaLinea(c.cantidad, c.unit);
+    caja.hidden = false;
+    caja.innerHTML = "<strong>$" + c.neto.toLocaleString("es-CL") + " neto</strong>" +
+      "Con IVA queda en $" + (c.neto+iva).toLocaleString("es-CL") +
+      "<br>" + c.detalle;
+  }
+  document.getElementById("btn").disabled = !(cliente && c);
+}
+
+/* ---------- Guardar ---------- */
+async function leerOrdenes(){
+  try{ return await leer(CLAVE); }
+  catch(e){ return []; }
+}
+async function guardar(){
+  const btn = document.getElementById("btn");
+  btn.disabled = true; btn.textContent = "Guardando…";
+  const c = cifras();
+  const ahora = new Date();
+  const orden = {
+    id: "OF-" + ahora.getTime(),
+    creada: ahora.toISOString(),
+    cliente: cliente.k, rut: cliente.rut, rs: cliente.rs,
+    dir: cliente.dir, com: cliente.com, ciu: cliente.ciu, gir: cliente.gir,
+    datos_completos: !!cliente.ok,
+    detalle: document.getElementById("detalle").value.trim(),
+    nota: document.getElementById("nota").value.trim(),
+    modo: modo,
+    kg: modo==="carga" ? (Number(document.getElementById("kg").value)||0)
+      : modo==="aereo" ? (Number(document.getElementById("kga").value)||0) : null,
+    m3: modo==="carga" ? (Number(document.getElementById("m3").value)||0) : null,
+    base: c.base, cantidad: c.cantidad, unit: c.unit, neto: c.neto,
+    estado: "pendiente", folio: null, fecha_facturacion: null, avisada: false
+  };
+  try{
+    const actuales = await leerOrdenes();
+    actuales.unshift(orden);
+    TODAS = actuales;
+    const r = await fetch(API + "/" + CLAVE, {
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(actuales.slice(0,400))
+    });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    document.getElementById("formulario").style.display="none";
+    document.getElementById("barra").style.display="none";
+    document.getElementById("listo").style.display="block";
+    document.getElementById("listo-txt").textContent =
+      cliente.k + " · $" + orden.neto.toLocaleString("es-CL") + " neto";
+    const a = document.getElementById("avisar");
+    a.href = enlaceWhatsapp(orden);
+    a.onclick = () => marcaAvisada(orden.id);
+    window.scrollTo(0,0);
+  }catch(e){
+    btn.disabled = false; btn.textContent = "Guardar la orden";
+    alert("No se pudo guardar. Revise la conexión y vuelva a intentarlo.\n\n(" + e.message + ")");
+  }
+}
+
+/* ---------- Aviso por WhatsApp ---------- */
+const FONO_TONO = "56968785075";
+function enlaceWhatsapp(o){
+  const f = new Date(o.creada).toLocaleDateString("es-CL",{day:"2-digit",month:"2-digit",year:"numeric"});
+  const l = [
+    "Nueva orden de facturación",
+    "",
+    "Cliente: " + o.cliente,
+    "Neto: $" + o.neto.toLocaleString("es-CL"),
+    o.detalle ? "Detalle: " + o.detalle : null,
+    o.modo === "carga" ? "Carga: " + o.kg + " kg · " + o.m3 + " m³" : null,
+    o.modo === "aereo" ? "Aéreo: " + o.kg + " kg" : null,
+    o.nota ? "Nota: " + o.nota : null,
+    "Fecha: " + f
+  ].filter(Boolean).join("\n");
+  return "https://wa.me/" + FONO_TONO + "?text=" + encodeURIComponent(l);
+}
+
+/* ---------- Listado, búsqueda y reenvío ---------- */
+let filtro = "enviar";
+const esc = t => (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function setFiltro(f){
+  filtro = f;
+  document.getElementById("f-enviar").setAttribute("aria-pressed", f==="enviar");
+  document.getElementById("f-todas").setAttribute("aria-pressed", f==="todas");
+  pintaRecientes();
+}
+
+/* Marca la orden como avisada. Es best-effort: sabemos que abrió WhatsApp,
+   no que haya apretado enviar. Por eso siempre se puede reenviar. */
+async function marcaAvisada(id){
+  const o = TODAS.find(x => x.id === id);
+  if(!o || o.avisada) return;
+  o.avisada = true;
+  try{
+    await guardar(CLAVE, TODAS);
+  }catch(e){ /* si falla, queda para el próximo intento */ }
+  pintaRecientes();
+}
+
+let TODAS = [];
+async function pintaRecientes(){
+  const el = document.getElementById("recientes");
+  if(!TODAS.length){
+    TODAS = await leerOrdenes();
+    if(!TODAS.length){ el.innerHTML = '<div class="vacio">Todavía no hay órdenes.</div>'; return; }
+  }
+  const q = (document.getElementById("buscar").value||"").toUpperCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const coincide = o => !q ||
+    ((o.cliente||"") + " " + (o.detalle||"") + " " + (o.nota||"")).toUpperCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"").includes(q);
+
+  let lista = TODAS.filter(coincide);
+  if(filtro === "enviar") lista = lista.filter(o => !o.avisada && o.estado === "pendiente");
+  lista = lista.slice(0, 40);
+
+  document.getElementById("f-enviar").textContent =
+    "Por enviar (" + TODAS.filter(o => !o.avisada && o.estado === "pendiente").length + ")";
+
+  if(!lista.length){
+    el.innerHTML = '<div class="vacio">' +
+      (q ? "No hay órdenes que coincidan con esa búsqueda."
+         : filtro === "enviar" ? "No queda ninguna orden por avisar."
+         : "Todavía no hay órdenes.") + '</div>';
+    return;
+  }
+
+  el.innerHTML = lista.map(x => {
+    const f = new Date(x.creada);
+    const fecha = f.toLocaleDateString("es-CL",{day:"2-digit",month:"short"}) + " " +
+                  f.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"});
+    const fact = x.estado === "facturada";
+    return '<div class="orden'+(fact?' lista_':'')+(x.avisada?' avisada':'')+'">' +
+      '<b>'+esc(x.cliente)+'</b>' +
+      '<div class="meta">'+fecha+' · $'+x.neto.toLocaleString("es-CL")+' neto</div>' +
+      (x.detalle ? '<div class="meta">'+esc(x.detalle)+'</div>' : '') +
+      '<span class="estado '+(fact?'e-fact':x.avisada?'e-env':'e-pend')+'">'+
+        (fact ? 'Facturada' + (x.folio ? ' · folio '+x.folio : '')
+              : x.avisada ? 'Avisada a Toño' : 'Falta avisar') +
+      '</span>' +
+      (fact ? '' :
+        '<a class="wa-mini" href="'+enlaceWhatsapp(x)+'" target="_blank" rel="noopener" ' +
+        'onclick="marcaAvisada(\''+x.id+'\')">' +
+        (x.avisada ? 'Volver a enviar por WhatsApp' : 'Enviar a Toño por WhatsApp') + '</a>') +
+    '</div>';
+  }).join("");
+}
+
+(async () => {
+  if(!await iniciaPortal()) return;
+  pintaLista("");
+  pintaRecientes();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Órdenes por facturar · Transportes Avendaño</title>
+<style>
+  :root{
+    --tinta:#16202B; --tinta-2:#33465C; --papel:#fff; --fondo:#EEF1F4;
+    --marca:#2D2E82; --marca-2:#35A8E0; --senal:#F2B01E; --senal-osc:#B8830C; --ok:#2E7D5B; --alerta:#B33A2B; --borde:#D3DAE1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--fondo); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:1.5}
+  header{background:var(--marca); color:#fff; padding:14px 22px; display:flex; align-items:center; gap:14px}
+  header .logo{width:46px; height:46px; border-radius:9px; flex:none}
+  header .volver{flex:none; width:38px; height:38px; border-radius:9px; background:rgba(255,255,255,.14);
+    color:#fff; text-decoration:none; font-size:26px; line-height:35px; text-align:center; font-weight:600}
+  header .volver:hover{background:rgba(255,255,255,.28)}
+  header .marca{font-size:13px; opacity:.72}
+  header h1{font-size:20px; margin:2px 0 0; font-weight:600}
+  .franja{height:5px; background:var(--marca-2)}
+  main{max-width:1120px; margin:0 auto; padding:22px 18px 60px}
+
+  .barra{display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end; background:var(--papel);
+    border:1px solid var(--borde); border-radius:12px; padding:16px; margin-bottom:18px}
+  .barra label{display:block; font-size:13px; color:var(--tinta-2); margin-bottom:5px}
+  .barra input, .barra select{font:inherit; padding:9px 11px; border:1px solid var(--borde); border-radius:8px}
+  .crece{flex:1}
+  button{font:inherit; cursor:pointer; border-radius:9px; border:1px solid transparent; padding:11px 16px}
+  .primario{background:var(--senal); color:var(--tinta); font-weight:600}
+  .primario:disabled{background:#C9D0D7; color:#7B8794; cursor:default}
+  .neutro{background:#fff; border-color:var(--borde); color:var(--tinta)}
+  .verde{background:var(--ok); color:#fff; font-weight:600}
+
+  .resumen{display:flex; gap:26px; flex-wrap:wrap; background:var(--tinta); color:#fff;
+    border-radius:12px; padding:16px 20px; margin-bottom:18px}
+  .resumen div span{display:block; font-size:13px; opacity:.7}
+  .resumen div b{font-size:23px; font-weight:600}
+
+  .cliente-bloque{background:var(--papel); border:1px solid var(--borde); border-radius:12px; margin-bottom:14px; overflow:hidden}
+  .cliente-cab{display:flex; align-items:center; gap:12px; padding:13px 16px; background:#F6F8FA; border-bottom:1px solid var(--borde)}
+  .cliente-cab b{font-size:16px}
+  .cliente-cab .rs{font-size:13px; color:var(--tinta-2)}
+  .cliente-cab .tot{margin-left:auto; font-size:16px; font-weight:600; white-space:nowrap}
+  .falta{background:#FFF4D6; border-left:5px solid var(--senal-osc); padding:11px 15px; font-size:14px}
+  .falta input{font:inherit; font-size:14px; padding:7px 9px; border:1px solid var(--borde); border-radius:7px; margin:4px 6px 0 0}
+
+  table{width:100%; border-collapse:collapse}
+  th,td{text-align:left; padding:10px 14px; border-bottom:1px solid #EDF1F4; font-size:14px; vertical-align:top}
+  th{font-size:12px; color:var(--tinta-2); font-weight:600; background:#FBFCFD}
+  td.num, th.num{text-align:right; white-space:nowrap}
+  tr.no{opacity:.42}
+  .chk{width:18px; height:18px; accent-color:var(--senal-osc)}
+  .detalle-txt{color:var(--tinta-2); font-size:13px; display:block; margin-top:4px}
+  textarea.ed{width:100%; min-width:260px; font:inherit; font-size:14px; line-height:1.45;
+    padding:8px 10px; border:1px solid var(--borde); border-radius:8px; resize:vertical; background:#fff}
+  textarea.ed:focus{outline:2px solid var(--senal); outline-offset:1px; border-color:var(--tinta-2)}
+  .editado{background:#FFF9E8}
+  .sin-guardar{background:#FFF4D6; border-left:5px solid var(--senal-osc); padding:11px 16px;
+    border-radius:0 10px 10px 0; margin-bottom:14px; font-size:14px; display:none}
+  .acciones-cli{display:flex; gap:8px; margin-left:14px}
+  .mini.wa{border-color:#25D366; color:#128C4A}
+  .mini.wa:hover{background:#25D366; color:#06331A; border-color:#25D366}
+  .mini.pf{border-color:var(--marca); color:var(--marca)}
+  .mini.env{border-color:var(--senal-osc); color:var(--senal-osc)}
+  .mini.env:hover{background:var(--senal); color:var(--tinta); border-color:var(--senal)}
+  .mini.pf:hover{background:var(--marca); color:#fff}
+  .mini{background:#fff; border:1px solid var(--borde); color:var(--tinta-2); font-size:12px;
+    padding:6px 10px; border-radius:7px; white-space:nowrap}
+  .mini:hover{border-color:var(--ok); color:var(--ok)}
+  .badge{display:inline-block; font-size:12px; padding:2px 8px; border-radius:20px; background:#EDF1F4; color:var(--tinta-2)}
+
+  .hist{margin-top:34px}
+  .hist h2{font-size:17px; margin:0 0 12px}
+  .vacio{background:var(--papel); border:1px dashed var(--borde); border-radius:12px; padding:36px; text-align:center; color:var(--tinta-2)}
+  .aviso{background:#FFF4D6; border-left:5px solid var(--senal-osc); padding:13px 16px; border-radius:0 10px 10px 0; margin-bottom:18px; font-size:14px}
+  .pie{margin-top:30px; font-size:13px; color:var(--tinta-2)}
+</style>
+</head>
+<body>
+<header>
+  <a class="volver" href="index.html" aria-label="Volver al inicio">‹</a>
+  <img src="logo.png" alt="" class="logo">
+  <div>
+    <div class="marca">Superfrut Transportes · Avendaño y Avendaño Ltda.</div>
+    <h1>Órdenes por facturar</h1>
+  </div>
+</header>
+<div class="franja"></div>
+
+<main>
+  <div class="barra">
+    <div>
+      <label for="fecha">Fecha de emisión</label>
+      <input type="date" id="fecha">
+    </div>
+    <div>
+      <label for="dias">Días de vencimiento</label>
+      <input type="number" id="dias" value="15" style="width:90px">
+    </div>
+    <div class="crece"></div>
+    <button class="neutro" onclick="cargar()">Actualizar</button>
+    <button class="neutro" id="btn-guardar" onclick="guardarEdiciones()" disabled>Guardar cambios</button>
+    <button class="primario" id="btn-excel" onclick="generarExcel()" disabled>Generar archivo para Facto</button>
+    <button class="verde" id="btn-marcar" onclick="marcarFacturadas()" disabled>Marcar como facturadas</button>
+  </div>
+
+  <div class="resumen">
+    <div><span>Órdenes seleccionadas</span><b id="r-n">0</b></div>
+    <div><span>Facturas que se emitirán</span><b id="r-f">0</b></div>
+    <div><span>Neto</span><b id="r-neto">$0</b></div>
+    <div><span>IVA</span><b id="r-iva">$0</b></div>
+    <div><span>Total</span><b id="r-total">$0</b></div>
+  </div>
+
+  <div class="sin-guardar" id="aviso-edicion">Hay descripciones modificadas que todavía no se guardan.
+  El archivo para Facto sale con lo que se ve en pantalla; para que además quede grabado, presione «Guardar cambios».</div>
+
+  <div id="pendientes"></div>
+
+  <div class="hist">
+    <h2>Ya facturadas</h2>
+    <div id="historial"></div>
+  </div>
+
+  <p class="pie">Los montos del archivo se calculan con la regla de redondeo que Facto valida: el bruto de cada
+  línea es el neto multiplicado por 1,19 y redondeado al final. Van como números, no como fórmulas, para que el
+  importador los lea aunque Excel no recalcule.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="ta-lib.js?v=1"></script>
+<script src="proforma.js?v=3"></script>
+<script>
+const CLAVE = "ta_ordenes";
+let ORDENES = [];
+const sel = new Set();          // ids seleccionados
+const parches = {};             // rut -> {dir, com, ciu, gir} completados a mano
+
+document.getElementById("fecha").value = new Date().toISOString().slice(0,10);
+
+const plata = n => "$" + Math.round(n).toLocaleString("es-CL");
+/* Facto se atraganta con saltos de línea dentro de una celda: se reemplazan
+   por un separador visible y se colapsan los espacios repetidos. */
+const limpiaTexto = t => (t||"").replace(/\s*[\r\n]+\s*/g, " · ")
+                                .replace(/\s{2,}/g, " ").trim().toUpperCase();
+const esc = t => (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+async function cargar(){
+  if(hayCambios && !confirm("Hay descripciones modificadas sin guardar. Si actualiza, se pierden. ¿Continuar?")) return;
+  const cont = document.getElementById("pendientes");
+  cont.innerHTML = '<div class="vacio">Cargando…</div>';
+  try{
+    ORDENES = await leer(CLAVE);
+  }catch(e){
+    cont.innerHTML = '<div class="vacio">No se pudieron cargar las órdenes.<br>' + e.message + '</div>';
+    return;
+  }
+  sel.clear();
+  ORDENES.filter(o => o.estado === "pendiente").forEach(o => sel.add(o.id));
+  pintar();
+}
+
+/* Agrupa las órdenes seleccionadas por cliente y arma las líneas de cada factura */
+function facturas(){
+  const porRut = {};
+  ORDENES.filter(o => sel.has(o.id) && o.estado === "pendiente").forEach(o => {
+    (porRut[o.rut] = porRut[o.rut] || []).push(o);
+  });
+  return Object.keys(porRut).map(rut => {
+    let lineas = porRut[rut].map(o => ({
+      glosa: o.base === "MONTO"  ? "SERVICIO DE TRANSPORTE"
+           : o.base === "AEREO"  ? "FLETE AEREO SANTIAGO - PUERTO NATALES KG"
+           : "FLETE SANTIAGO - PUERTO NATALES " + o.base,
+      desc: limpiaTexto(o.detalle),
+      cantidad: o.cantidad, unit: o.unit, neto: o.neto, ids:[o.id]
+    }));
+    /* La plantilla admite 5 bloques. Si hay más, se agrupan por tipo de cobro,
+       que es la regla que ya usamos con los embarques grandes. */
+    if(lineas.length > 5){
+      const g = {};
+      lineas.forEach(l => {
+        const k = l.glosa + "|" + l.unit;
+        if(!g[k]) g[k] = {glosa:l.glosa, desc:[], cantidad:0, unit:l.unit, neto:0, ids:[]};
+        g[k].cantidad += l.cantidad; g[k].neto += l.neto;
+        if(l.desc) g[k].desc.push(l.desc);
+        g[k].ids.push(...l.ids);
+      });
+      lineas = Object.values(g).map(l => ({...l, desc: l.desc.join(" · ").slice(0,900)}));
+    }
+    const o = porRut[rut][0];
+    const p = parches[rut] || {};
+    const cli = {
+      rut, rs:o.rs, cliente:o.cliente,
+      dir: p.dir ?? o.dir, com: p.com ?? o.com, ciu: p.ciu ?? o.ciu, gir: p.gir ?? o.gir
+    };
+    cli.completo = !!(cli.dir && cli.com && cli.ciu && cli.gir);
+    const neto = lineas.reduce((s,l) => s + Math.round(l.cantidad*l.unit), 0);
+    const iva  = lineas.reduce((s,l) => s + ivaLinea(l.cantidad, l.unit), 0);
+    return {cli, lineas, neto, iva, total: neto+iva, ids: porRut[rut].map(x=>x.id)};
+  }).sort((a,b) => a.cli.cliente.localeCompare(b.cli.cliente));
+}
+
+function pintar(){
+  const pend = ORDENES.filter(o => o.estado === "pendiente");
+  const cont = document.getElementById("pendientes");
+
+  if(!pend.length){
+    cont.innerHTML = '<div class="vacio">No hay órdenes esperando. Cuando se deje una nueva, aparece acá.</div>';
+  } else {
+    const fs = facturas();
+    const rutsSel = new Set(fs.map(f => f.cli.rut));
+    /* Clientes con órdenes pendientes que quedaron sin seleccionar también se muestran */
+    const todos = {};
+    pend.forEach(o => (todos[o.rut] = todos[o.rut] || []).push(o));
+
+    cont.innerHTML = Object.keys(todos).sort((a,b)=>
+      (todos[a][0].cliente).localeCompare(todos[b][0].cliente)
+    ).map(rut => {
+      const grupo = todos[rut];
+      const f = fs.find(x => x.cli.rut === rut);
+      const o0 = grupo[0];
+      const p = parches[rut] || {};
+      const dir = p.dir ?? o0.dir, com = p.com ?? o0.com, ciu = p.ciu ?? o0.ciu, gir = p.gir ?? o0.gir;
+      const completo = !!(dir && com && ciu && gir);
+      const tot = f ? f.total : 0;
+
+      const filas = grupo.map(o => {
+        const iva = ivaLinea(o.cantidad, o.unit);
+        const marcado = sel.has(o.id);
+        const f2 = new Date(o.creada).toLocaleDateString("es-CL",{day:"2-digit",month:"short"});
+        return '<tr class="'+(marcado?'':'no')+'">' +
+          '<td><input type="checkbox" class="chk" '+(marcado?'checked':'')+' onchange="toggle(\''+o.id+'\')"></td>' +
+          '<td>'+f2+'</td>' +
+          '<td><textarea class="ed" rows="2" placeholder="Sin descripción — escríbala acá" ' +
+            'oninput="editaDetalle(\''+o.id+'\', this.value)">' + esc(o.detalle) + '</textarea>' +
+            (o.nota ? '<span class="detalle-txt">Nota del jefe: '+esc(o.nota)+'</span>' : '') +
+            (o.modo === "carga" ? '<span class="detalle-txt">'+o.kg+' kg · '+o.m3+' m³</span>' : '') +
+            (o.modo === "aereo" ? '<span class="detalle-txt">Aéreo · '+o.kg+' kg</span>' : '') +
+          '</td>' +
+          '<td><span class="badge">'+o.base+'</span></td>' +
+          '<td class="num">'+plata(o.neto)+'</td>' +
+          '<td class="num">'+plata(iva)+'</td>' +
+          '<td class="num"><b>'+plata(o.neto+iva)+'</b></td>' +
+          '<td><button class="mini" title="Archivar sin generar archivo, para órdenes ya emitidas por fuera" ' +
+            'onclick="cerrarUna(\''+o.id+'\')">Ya facturada</button></td>' +
+        '</tr>';
+      }).join("");
+
+      return '<div class="cliente-bloque">' +
+        '<div class="cliente-cab"><div><b>'+o0.cliente+'</b>' +
+          '<div class="rs">'+o0.rs+' · '+rut+'</div></div>' +
+          '<div class="tot">'+plata(tot)+'</div>' +
+          (f ? '<div class="acciones-cli">' +
+            '<button class="mini wa" onclick="waFactura(\''+rut+'\')">WhatsApp</button>' +
+            '<button class="mini pf" onclick="proforma(\''+rut+'\')">Proforma</button>' +
+          '</div>' : '') + '</div>' +
+        (completo ? '' :
+          '<div class="falta">Faltan datos que Facto exige para este cliente. Complételos acá y quedan aplicados al archivo.' +
+          '<div>' +
+            '<input placeholder="Dirección" value="'+(dir||'')+'" oninput="parche(\''+rut+'\',\'dir\',this.value)">' +
+            '<input placeholder="Comuna" value="'+(com||'')+'" oninput="parche(\''+rut+'\',\'com\',this.value)">' +
+            '<input placeholder="Ciudad" value="'+(ciu||'')+'" oninput="parche(\''+rut+'\',\'ciu\',this.value)">' +
+            '<input placeholder="Giro" value="'+(gir||'')+'" oninput="parche(\''+rut+'\',\'gir\',this.value)">' +
+          '</div></div>') +
+        '<table><thead><tr><th></th><th>Fecha</th><th>Qué se factura</th><th>Cobro</th>' +
+        '<th class="num">Neto</th><th class="num">IVA</th><th class="num">Total</th><th></th></tr></thead>' +
+        '<tbody>'+filas+'</tbody></table></div>';
+    }).join("");
+  }
+
+  /* Resumen */
+  const fs = facturas();
+  const neto = fs.reduce((s,f)=>s+f.neto,0), iva = fs.reduce((s,f)=>s+f.iva,0);
+  document.getElementById("r-n").textContent = sel.size;
+  document.getElementById("r-f").textContent = fs.length;
+  document.getElementById("r-neto").textContent = plata(neto);
+  document.getElementById("r-iva").textContent = plata(iva);
+  document.getElementById("r-total").textContent = plata(neto+iva);
+
+  const listo = fs.length > 0 && fs.every(f => f.cli.completo);
+  document.getElementById("btn-excel").disabled = !listo;
+  document.getElementById("btn-marcar").disabled = fs.length === 0;
+
+  /* Historial */
+  const hechas = ORDENES.filter(o => o.estado === "facturada").slice(0,40);
+  document.getElementById("historial").innerHTML = hechas.length
+    ? '<div class="cliente-bloque"><table><thead><tr><th>Facturada</th><th>Cliente</th>' +
+      '<th>Qué se facturó</th><th>Folio</th><th class="num">Total</th></tr></thead><tbody>' +
+      hechas.map(o => '<tr><td>'+(o.fecha_facturacion||"").slice(0,10)+'</td><td>'+o.cliente+'</td>' +
+        '<td>'+esc(o.detalle)+'</td><td>'+esc(o.folio||"—") +
+          (o.cerrada_aparte ? ' <span class="badge">emitida aparte</span>' : '') + '</td>' +
+        '<td class="num">'+plata(o.neto + ivaLinea(o.cantidad,o.unit))+'</td></tr>').join("") +
+      '</tbody></table></div>'
+    : '<div class="vacio">Todavía no hay órdenes facturadas.</div>';
+}
+
+function toggle(id){ sel.has(id) ? sel.delete(id) : sel.add(id); pintar(); }
+
+/* Edición de la descripción. No se vuelve a pintar la tabla en cada tecla,
+   porque eso haría perder el cursor mientras se escribe. */
+let hayCambios = false;
+function editaDetalle(id, txt){
+  const o = ORDENES.find(x => x.id === id);
+  if(!o) return;
+  if(o.detalle_original === undefined) o.detalle_original = o.detalle || "";
+  o.detalle = txt;
+  o.editado = (txt !== o.detalle_original);
+  hayCambios = true;
+  document.getElementById("btn-guardar").disabled = false;
+  document.getElementById("aviso-edicion").style.display = "block";
+}
+
+async function guardarEdiciones(){
+  const b = document.getElementById("btn-guardar");
+  b.disabled = true; b.textContent = "Guardando…";
+  try{
+    await guardar(CLAVE, ORDENES);
+    hayCambios = false;
+    document.getElementById("aviso-edicion").style.display = "none";
+    b.textContent = "Guardar cambios";
+  }catch(e){
+    b.disabled = false; b.textContent = "Guardar cambios";
+    alert("No se pudieron guardar los cambios.\n\n(" + e.message + ")");
+  }
+}
+
+/* Aviso del navegador si intenta cerrar con cambios pendientes */
+window.addEventListener("beforeunload", e => {
+  if(hayCambios){ e.preventDefault(); e.returnValue = ""; }
+});
+function parche(rut, campo, valor){
+  parches[rut] = parches[rut] || {};
+  parches[rut][campo] = valor.toUpperCase();
+  const fs = facturas();
+  const listo = fs.length > 0 && fs.every(f => f.cli.completo);
+  document.getElementById("btn-excel").disabled = !listo;
+}
+
+/* ---------- Archivo de carga masiva ---------- */
+const CAB_BASE = ["Fecha","Tipo documento","Folio","Tipo referencia","Folio referencia","RUT Receptor",
+"Razón social","Dirección","Comuna","Ciudad","Giro","Teléfono","Nombre contacto","Email contacto",
+"Desc/Rcrg global exento","Desc/Rcrg global afecto","Exento","Neto","IVA","Otros impuestos","Total",
+"Días de vencimiento","Forma de pago","Caja receptora del pago"];
+const CAB_DET = ["Glosa","Descripción larga","SKU","Bodega origen","Bodega destino","Afecto a IVA",
+"Cantidad","Valor unit neto","Costo unit neto","Desc/Rcrg línea","Impuesto especif código","Impuesto especif unitario"];
+
+function generarExcel(){
+  const fs = facturas();
+  if(!fs.length) return;
+  const d = document.getElementById("fecha").value;           // AAAA-MM-DD
+  const fecha = d.slice(8,10) + "-" + d.slice(5,7) + "-" + d.slice(0,4);
+  const dias = Number(document.getElementById("dias").value) || 15;
+
+  const fila1 = new Array(84).fill(null);
+  fila1[0]="Datos básicos documento"; fila1[5]="Datos cliente"; fila1[14]="Totales"; fila1[21]="Datos de pago";
+  [24,36,48,60,72].forEach((c,i) => fila1[c] = "Detalle " + (i+1));
+
+  const fila2 = CAB_BASE.concat(CAB_DET, CAB_DET, CAB_DET, CAB_DET, CAB_DET);
+  const aoa = [fila1, fila2];
+
+  fs.forEach(f => {
+    const r = new Array(84).fill(null);
+    r[0]=fecha; r[1]="factura electrónica";
+    r[5]=f.cli.rut; r[6]=(f.cli.rs||"").toUpperCase(); r[7]=(f.cli.dir||"").toUpperCase();
+    r[8]=(f.cli.com||"").toUpperCase(); r[9]=(f.cli.ciu||"").toUpperCase(); r[10]=(f.cli.gir||"").toUpperCase();
+    r[16]=0; r[17]=f.neto; r[18]=f.iva; r[19]=0; r[20]=f.total;
+    r[21]=dias;
+    f.lineas.slice(0,5).forEach((l, i) => {
+      const b = 24 + i*12;
+      r[b]   = l.glosa;
+      r[b+1] = l.desc || null;
+      r[b+5] = "SI";
+      r[b+6] = l.cantidad;
+      r[b+7] = l.unit;
+    });
+    aoa.push(r);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws["!merges"] = [
+    {s:{r:0,c:0}, e:{r:0,c:4}}, {s:{r:0,c:5}, e:{r:0,c:13}},
+    {s:{r:0,c:14},e:{r:0,c:20}}, {s:{r:0,c:21},e:{r:0,c:23}},
+    {s:{r:0,c:24},e:{r:0,c:35}}, {s:{r:0,c:36},e:{r:0,c:47}},
+    {s:{r:0,c:48},e:{r:0,c:59}}, {s:{r:0,c:60},e:{r:0,c:71}},
+    {s:{r:0,c:72},e:{r:0,c:83}}
+  ];
+  ws["!cols"] = [{wch:11},{wch:18},{wch:8},{wch:10},{wch:10},{wch:13},{wch:38},{wch:26},
+                 {wch:16},{wch:16},{wch:30},{wch:10},{wch:16},{wch:20},{wch:12},{wch:12},
+                 {wch:10},{wch:12},{wch:11},{wch:12},{wch:12},{wch:10},{wch:14},{wch:10}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Datos a facturar");
+  XLSX.writeFile(wb, "FACTO_ordenes_" + d + ".xlsx");
+}
+
+/* ---------- Envío por WhatsApp ---------- */
+/* Sin número fijo: WhatsApp abre la lista de contactos y usted elige a quién.
+   Así sirve tanto para mandárselo al cliente como para reenviárselo al jefe. */
+function waFactura(rut){
+  const f = facturas().find(x => x.cli.rut === rut);
+  if(!f) return;
+  const l = [
+    "TRANSPORTES AVENDAÑO Y AVENDAÑO LTDA",
+    "Detalle de servicios de transporte",
+    "",
+    f.cli.rs,
+    "RUT " + f.cli.rut,
+    ""
+  ];
+  f.lineas.forEach(x => {
+    l.push("• " + (x.desc || x.glosa));
+    l.push("   " + plata(Math.round(x.cantidad * x.unit)) + " neto");
+  });
+  l.push("", "Neto: " + plata(f.neto), "IVA: " + plata(f.iva), "TOTAL: " + plata(f.total));
+  window.open("https://wa.me/?text=" + encodeURIComponent(l.join("\n")), "_blank", "noopener");
+}
+
+/* ---------- Proforma en PDF ---------- */
+/* Se abre una ventana con la proforma maquetada y se manda a imprimir.
+   El propio navegador ofrece "Guardar como PDF", así que no hace falta
+   ninguna librería externa. */
+
+function proforma(rut){
+  const f = facturas().find(x => x.cli.rut === rut);
+  if(!f) return;
+  const hoy = new Date();
+  const fecha = hoy.toLocaleDateString("es-CL",{day:"2-digit",month:"long",year:"numeric"});
+  const nro = "PF-" + hoy.toISOString().slice(0,10).replace(/-/g,"") + "-" +
+              f.cli.rut.replace(/[^0-9]/g,"").slice(-4);
+  const dias = Number(document.getElementById("dias").value) || 15;
+
+  const filas = f.lineas.map((x,i) => {
+    const neto = Math.round(x.cantidad * x.unit);
+    return `<tr>
+      <td class="c">${i+1}</td>
+      <td><b>${esc(x.glosa)}</b>${x.desc ? '<div class="sub">'+esc(x.desc)+'</div>' : ''}</td>
+      <td class="n">${x.cantidad.toLocaleString("es-CL")}</td>
+      <td class="n">${plata(x.unit)}</td>
+      <td class="n"><b>${plata(neto)}</b></td>
+    </tr>`;
+  }).join("");
+
+  const datos = JSON.stringify({f:{cli:f.cli, lineas:f.lineas, neto:f.neto, iva:f.iva, total:f.total}, dias:dias})
+    .replace(/</g,"\\u003c");
+
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+<base href="${location.href.split('?')[0]}">
+<title>${nro} · ${esc(f.cli.cliente)}</title>
+<style>
+  @page{size:letter; margin:16mm}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:#16202B; font-size:12px; line-height:1.5; margin:0; padding:16px}
+  @media print{body{padding:0}}
+  .cab{display:flex; justify-content:space-between; align-items:flex-start; gap:20px;
+    border-bottom:3px solid #2D2E82; padding-bottom:14px}
+  .cab .em b{font-size:15px; display:block; color:#2D2E82}
+  .cab .em span{display:block; color:#4A5568; font-size:11px}
+  .sello{border:2px solid #2D2E82; border-radius:8px; padding:10px 16px; text-align:center; flex:none}
+  .sello b{display:block; font-size:17px; letter-spacing:.08em; color:#2D2E82}
+  .sello span{font-size:11px; color:#4A5568; display:block; margin-top:2px}
+  h1{font-size:14px; margin:20px 0 8px; text-transform:uppercase; letter-spacing:.06em; color:#2D2E82}
+  .cli{background:#F4F6F9; border-left:4px solid #35A8E0; padding:12px 15px; border-radius:0 6px 6px 0}
+  .cli b{font-size:13px}
+  .cli div{color:#33465C}
+  table{width:100%; border-collapse:collapse; margin-top:8px}
+  th{background:#2D2E82; color:#fff; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em;
+    padding:9px 10px; text-align:left}
+  td{padding:10px; border-bottom:1px solid #E2E8F0; vertical-align:top}
+  td.n, th.n{text-align:right; white-space:nowrap}
+  td.c{text-align:center; color:#7B8794; width:28px}
+  .sub{color:#4A5568; font-size:11px; margin-top:3px}
+  .tot{margin-left:auto; margin-top:14px; width:280px}
+  .tot tr td{border:0; padding:5px 10px}
+  .tot .g td{border-top:2px solid #2D2E82; font-size:15px; font-weight:700; padding-top:10px}
+  .nota{margin-top:26px; background:#FFF7E6; border-left:4px solid #B8830C;
+    padding:12px 15px; font-size:11px; border-radius:0 6px 6px 0}
+  .pie{margin-top:22px; border-top:1px solid #E2E8F0; padding-top:10px;
+    font-size:10px; color:#7B8794; text-align:center}
+  @media print{.noimp{display:none}}
+  /* Barra propia arriba del documento: así el botón no tapa el sello de PROFORMA */
+  .barra-noimp{background:#EEF1F4; border-bottom:1px solid #D3DAE1; padding:12px 16px;
+    display:flex; align-items:center; gap:14px; margin:-16px -16px 22px}
+  .barra-noimp span{font-size:12px; color:#4A5568}
+  .noimp{background:#2D2E82; color:#fff; border:0; border-radius:8px;
+    padding:11px 20px; font-size:13px; font-weight:600; cursor:pointer}
+  .noimp:hover{background:#3A3BA0}
+  .noimp.env{background:#25D366; color:#06331A}
+  .noimp.env:hover{background:#1EB255}
+  .noimp:disabled{background:#C9D0D7; color:#7B8794; cursor:default}
+  @media print{.barra-noimp{display:none}}
+</style></head><body>
+<div class="barra-noimp">
+  <button class="noimp" onclick="window.print()">Guardar como PDF</button>
+  <button class="noimp env" id="btn-compartir">Compartir</button>
+  <span id="pista">En el diálogo de impresión, desmarque «Encabezados y pies de página».</span>
+</div>
+
+<script id="datos-proforma" type="application/json">${datos}<\/script>
+<script>
+const DATOS = JSON.parse(document.getElementById("datos-proforma").textContent);
+const btnC  = document.getElementById("btn-compartir");
+const pista = document.getElementById("pista");
+
+function traeScript(url){
+  return new Promise((ok, no) => {
+    const sc = document.createElement("script");
+    sc.src = url;
+    sc.onload = () => ok();
+    sc.onerror = () => no(new Error("no se pudo cargar " + url));
+    document.head.appendChild(sc);
+  });
+}
+
+/* Las librerías se cargan recién al apretar Compartir, con una fuente
+   alternativa por si la primera falla. */
+async function preparaLibrerias(){
+  if(!window.jspdf){
+    try{ await traeScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"); }
+    catch(e){ await traeScript("https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"); }
+  }
+  if(!window.jspdf) throw new Error("La librería de PDF no quedó disponible.");
+  if(typeof creaProformaPDF !== "function") await traeScript("proforma.js?v=3");
+  if(typeof creaProformaPDF !== "function")
+    throw new Error("Falta el archivo proforma.js en el sitio. Hay que subirlo junto a ordenes.html.");
+}
+
+btnC.addEventListener("click", async () => {
+  const original = btnC.textContent;
+  btnC.disabled = true; btnC.textContent = "Preparando…";
+  try{
+    await preparaLibrerias();
+    const {doc, nombre} = creaProformaPDF(DATOS.f, DATOS.dias);
+    const blob = doc.output("blob");
+    const archivo = new File([blob], nombre, {type:"application/pdf"});
+    const mensaje = "Proforma " + EMISOR.rs + " para " + DATOS.f.cli.rs +
+      " · Total $" + Math.round(DATOS.f.total).toLocaleString("es-CL") + " con IVA.";
+
+    /* Camino normal: el menú del sistema, con el PDF adjunto de verdad */
+    if(navigator.canShare && navigator.canShare({files:[archivo]})){
+      try{
+        await navigator.share({files:[archivo], title:nombre, text:mensaje});
+      }catch(e){
+        if(e.name !== "AbortError") alert("No se pudo compartir: " + e.message);
+      }
+      btnC.disabled = false; btnC.textContent = original;
+      return;
+    }
+
+    /* Este navegador no sabe adjuntar archivos: se descarga y se avisa */
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = nombre; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 6000);
+    pista.textContent = "Se descargó «" + nombre + "». Este navegador no puede adjuntar " +
+      "archivos por sí solo: adjúntelo desde WhatsApp o su correo. Desde el celular sí " +
+      "se comparte directo.";
+    pista.style.color = "#B8830C";
+  }catch(e){
+    alert("No se pudo preparar el archivo.\\n\\n" + e.message +
+          "\\n\\nMientras tanto puede usar «Guardar como PDF».");
+  }
+  btnC.disabled = false; btnC.textContent = original;
+});
+<\/script>
+
+<div class="cab">
+  <div class="em">
+    <b>${EMISOR.rs}</b>
+    <span>RUT ${EMISOR.rut}</span>
+    <span>${EMISOR.giro}</span>
+    <span>${EMISOR.dir}</span>
+    <span>${EMISOR.mail}</span>
+  </div>
+  <div class="sello">
+    <b>PROFORMA</b>
+    <span>${nro}</span>
+    <span>${fecha}</span>
+  </div>
+</div>
+
+<h1>Señores</h1>
+<div class="cli">
+  <b>${esc(f.cli.rs)}</b>
+  <div>RUT ${f.cli.rut}</div>
+  <div>${esc(f.cli.gir)}</div>
+  <div>${esc(f.cli.dir)}, ${esc(f.cli.com)}</div>
+</div>
+
+<h1>Detalle</h1>
+<table>
+  <thead><tr><th class="c">#</th><th>Servicio</th><th class="n">Cantidad</th>
+  <th class="n">Valor unitario</th><th class="n">Neto</th></tr></thead>
+  <tbody>${filas}</tbody>
+</table>
+
+<table class="tot">
+  <tr><td>Neto</td><td class="n">${plata(f.neto)}</td></tr>
+  <tr><td>IVA 19%</td><td class="n">${plata(f.iva)}</td></tr>
+  <tr class="g"><td>TOTAL</td><td class="n">${plata(f.total)}</td></tr>
+</table>
+
+<div class="nota">
+  <b>Este documento no tiene valor tributario.</b> Es una proforma emitida para su revisión
+  y para que pueda generar la orden de compra correspondiente. La factura electrónica se
+  emitirá una vez recibida su conformidad.<br><br>
+  Condición de pago: crédito ${dias} días desde la emisión de la factura.
+  Valores expresados en pesos chilenos.
+</div>
+
+<div class="pie">${EMISOR.rs} · ${EMISOR.dir} · ${EMISOR.mail}</div>
+</body></html>`;
+
+  const w = window.open("", "_blank");
+  if(!w){ alert("El navegador bloqueó la ventana. Permita las ventanas emergentes para este sitio."); return; }
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ---------- Cierre ---------- */
+/* Archiva una sola orden: sirve para las que se emitieron por fuera del
+   archivo, sin arrastrar al resto de lo que esté seleccionado. */
+async function cerrarUna(id){
+  const o = ORDENES.find(x => x.id === id);
+  if(!o) return;
+  const folio = prompt("Folio de la factura ya emitida para " + o.cliente +
+                       " ($" + Math.round(o.neto).toLocaleString("es-CL") + " neto).\n" +
+                       "Puede dejarlo en blanco si no lo tiene a mano:", "");
+  if(folio === null) return;
+  o.estado = "facturada";
+  o.folio = folio.trim() || null;
+  o.fecha_facturacion = new Date().toISOString();
+  o.cerrada_aparte = true;
+  sel.delete(id);
+  try{
+    await guardar(CLAVE, ORDENES);
+    pintar();
+  }catch(e){
+    alert("No se pudo archivar la orden.\n\n(" + e.message + ")");
+    cargar();
+  }
+}
+
+async function marcarFacturadas(){
+  const fs = facturas();
+  if(!fs.length) return;
+
+  /* Un folio por factura, es decir uno por cliente. Se pregunta de a uno
+     y se muestra el avance para no perderse cuando son muchas. */
+  const asignados = [];
+  for(let i = 0; i < fs.length; i++){
+    const f = fs[i];
+    const folio = prompt(
+      "Factura " + (i+1) + " de " + fs.length + "\n\n" +
+      f.cli.cliente + "\n" + f.cli.rs + "\n" +
+      "Total $" + Math.round(f.total).toLocaleString("es-CL") + "\n\n" +
+      "Folio que le asignó Facto (en blanco si no lo tiene):", "");
+    if(folio === null){                       // canceló: no se cierra nada
+      alert("No se cerró ninguna orden.");
+      return;
+    }
+    asignados.push({ids: f.ids, folio: folio.trim() || null});
+  }
+
+  const repetidos = asignados.map(a => a.folio).filter(Boolean);
+  const dup = repetidos.find((f, i) => repetidos.indexOf(f) !== i);
+  if(dup && !confirm("El folio " + dup + " quedó repetido en más de una factura.\n" +
+                     "Cada cliente debería tener uno distinto. ¿Continuar igual?")) return;
+
+  const hoy = new Date().toISOString();
+  const mapa = {};
+  asignados.forEach(a => a.ids.forEach(id => mapa[id] = a.folio));
+  ORDENES = ORDENES.map(o => mapa.hasOwnProperty(o.id)
+    ? {...o, estado:"facturada", fecha_facturacion:hoy, folio: mapa[o.id]}
+    : o);
+
+  try{
+    await guardar(CLAVE, ORDENES);
+    sel.clear(); hayCambios = false;
+    document.getElementById("aviso-edicion").style.display = "none";
+    pintar();
+  }catch(e){
+    alert("No se pudo guardar el cierre. Vuelva a intentarlo.\n\n(" + e.message + ")");
+    cargar();
+  }
+}
+
+(async () => { if(await iniciaPortal()) cargar(); })();
+</script>
+</body>
+</html>
